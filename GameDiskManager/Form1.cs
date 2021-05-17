@@ -28,10 +28,9 @@ namespace GameDiskManager
 
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
-                    dest.Text = fbd.SelectedPath;
-                    GameItem game = new GameItem("test", fbd.SelectedPath);
+                    source.Text = fbd.SelectedPath;
 
-                    Serializer<GameItem>.WriteToJSONFile(game, Path.Combine(fbd.SelectedPath, "config.json"));
+                    //Serializer<Game>.WriteToJSONFile(game, Path.Combine(fbd.SelectedPath, "config.json"));
                 }
             }
         }
@@ -45,16 +44,19 @@ namespace GameDiskManager
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
                     dest.Text = fbd.SelectedPath;
-                    GameItem game = new GameItem("test", fbd.SelectedPath);
 
-                    Serializer<GameItem>.WriteToJSONFile(game, Path.Combine(fbd.SelectedPath, "config.json"));
+                    //Serializer<Game>.WriteToJSONFile(game, Path.Combine(fbd.SelectedPath, "config.json"));
                 }
             }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            FastMove.MoveTime(source.Text, dest.Text);
+            Game game = new Game(source.Text);
+
+            FastMove.MigrateGame(game, dest.Text);
+
+            
         }
     }
 }

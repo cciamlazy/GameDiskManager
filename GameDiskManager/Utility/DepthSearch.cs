@@ -34,5 +34,34 @@ namespace GameDiskManager.Utility
                 return new List<string>();
             }
         }
+
+        public static long DirectorySize(string directory)
+        {
+            long size = 0;
+            Console.WriteLine("Scanning");
+            if (Directory.Exists(directory))
+            {
+                string[] folders = GetDirectories(directory).ToArray();
+                string[] files = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories);
+
+                //Get all the sizes
+                long[] sizes = new long[files.Length];
+                for (int i = 0; i < files.Length; i++)
+                {
+                    FileInfo fi = new FileInfo(files[i]);
+                    if (fi.Exists)
+                    {
+                        sizes[i] = fi.Length;
+                    }
+                }
+                size = sizes.Sum();
+            }
+            else
+            {
+                Console.WriteLine("Directory doesn't exist");
+                throw (new Exception());
+            }
+            return size;
+        }
     }
 }
