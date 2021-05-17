@@ -39,17 +39,17 @@ namespace GameDiskManager.Utility
             Console.WriteLine(tsize + "GB/hour");
         }
 
-        public static void MoveGameItem (ref MovingItem file)
+        public static void MoveGameItem (ref MigrationFile file)
         {
-            file.MovingStatus = MovingStatus.Transfering;
+            file.Status = MigrationStatus.Migrating;
             try
             {
                 FMove(file.source, file.destination, true);
-                file.MovingStatus = MovingStatus.Complete;
+                file.Status = MigrationStatus.Successful;
             }
             catch(Exception e)
             {
-                file.MovingStatus = MovingStatus.Failed;
+                file.Status = MigrationStatus.Failed;
                 Console.WriteLine(e.Message);
             }
         }
@@ -175,20 +175,5 @@ namespace GameDiskManager.Utility
                 Console.WriteLine("Tried setting access control and failed: " + e.Message);
             }
         }
-    }
-
-    public enum MovingStatus
-    {
-        Pending,
-        Transfering,
-        Complete,
-        Failed
-    }
-    public class MovingItem
-    {
-        public string source { get; set; }
-        public string destination { get; set; }
-        public long size { get; set; }
-        public MovingStatus MovingStatus { get; set; }
     }
 }

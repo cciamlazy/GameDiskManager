@@ -1,12 +1,13 @@
 ﻿using GameDiskManager.Utility;
-using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MoreLinq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using LiteDB;
 
 namespace GameDiskManager.Types
 {
@@ -24,11 +25,19 @@ namespace GameDiskManager.Types
             Location = dir;
             this.FileInfo = new FileInfo(dir);
             this.Size = this.FileInfo.Length;
-            this.EZSize = Game.BytesToString(this.Size);
+            this.EZSize = Utils.BytesToString(this.Size);
         }
     }
-    public class Game
+    
+    public class ConfigFile
     {
+
+    }
+    public class Game : IEquatable<Game>
+    {
+        public int LauncherID { get; set; }
+        public int GameID { get; set; }
+        public int DriveID { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
         private long _size { get
@@ -38,13 +47,19 @@ namespace GameDiskManager.Types
             set
             {
                 Size = value;
-                EZSize = BytesToString(value);
+                EZSize = Utils.BytesToString(value);
             } 
         }
         public long Size { get; set; }
         public string EZSize { get; set; }
+        public float PercentDiskSpace { get; set; }
         public string[] Folders { get; set; }
         public GameFile[] GameFiles { get; set; }
+        public int Priority { get; set; }
+        public DateTime LastPlayed { get; set; }
+        public int PlayTime { get; set; }
+        public bool Active { get; set; }
+        public ConfigFile[] ConfigFiles { get; set; }
 
         public Game (string dir, string name = "")
         {
@@ -104,6 +119,8 @@ namespace GameDiskManager.Types
 
         public void Migrate (string dest)
         {
+            this.Scan();
+
             Console.WriteLine("Migrating game: " + this.Name);
 
             if (!Directory.Exists(dest))
@@ -118,12 +135,12 @@ namespace GameDiskManager.Types
 
             for (int i = 0; i < GameFiles.Length; i++)
             {
-                MovingItem item = new MovingItem()
+                MigrationFile item = new MigrationFile()
                 {
                     source = Location + GameFiles[i].Location,
                     destination = dest + GameFiles[i].Location,
                     size = GameFiles[i].Size,
-                    MovingStatus = MovingStatus.Pending
+                    Status = MigrationStatus.Pending
                 };
                 FastMove.MoveGameItem(ref item);
 
@@ -132,22 +149,22 @@ namespace GameDiskManager.Types
 
             Serializer<GameFile[]>
                 .WriteToJSONFile(GameFiles
-                .Where(x => x.MovingItem.MovingStatus == MovingStatus.Failed)
+                .Where(x => x.MovingItem.MovingStatus == MigrationStatus.Failed)
                 .ToArray(), Path.Combine(dest, "failed.json"));
 
             Location = dest;
             Scan();
         }
 
-        public static string BytesToString(long byteCount)
+        public bool Equals(Game other)
         {
-            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
-            if (byteCount == 0)
-                return "0" + suf[0];
-            long bytes = Math.Abs(byteCount);
-            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
-            return (Math.Sign(byteCount) * num).ToString() + suf[place];
+            if (other is null)
+                return false;
+
+            return this.GameID == other.GameID && this.Location == other.Location;
         }
+
+        public override bool Equals(object obj) => Equals(obj as Game);
+        public override int GetHashCode() => (GameID, Location).GetHashCode();
     }
 }
