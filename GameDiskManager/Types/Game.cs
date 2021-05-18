@@ -8,6 +8,8 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using LiteDB;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace GameDiskManager.Types
 {
@@ -17,15 +19,24 @@ namespace GameDiskManager.Types
         public string Location { get; set; }
         public long Size { get; set; }
         public string EZSize { get; set; }
-        public FileInfo FileInfo { get; set; }
-        public MovingItem MovingItem { get; set; }
 
-        public GameFile (string dir)
+        public GameFile(string location)
         {
-            Location = dir;
-            this.FileInfo = new FileInfo(dir);
-            this.Size = this.FileInfo.Length;
-            this.EZSize = Utils.BytesToString(this.Size);
+            Location = location;
+            if (location != null)
+            {
+                var FileInfo = new FileInfo(location);
+                this.Size = FileInfo.Length;
+                this.EZSize = Utils.BytesToString(this.Size);
+            }
+        }
+
+        [JsonConstructor]
+        public GameFile (string location, long size, string ezSize)
+        {
+            Location = location;
+            this.Size = size;
+            this.EZSize = ezSize;
         }
     }
     
@@ -52,8 +63,12 @@ namespace GameDiskManager.Types
         }
         public long Size { get; set; }
         public string EZSize { get; set; }
-        public float PercentDiskSpace { get; set; }
+        public double PercentDiskSpace { get; set; }
+
+        [JsonIgnore]
         public string[] Folders { get; set; }
+
+        [JsonIgnore]
         public GameFile[] GameFiles { get; set; }
         public int Priority { get; set; }
         public DateTime LastPlayed { get; set; }
@@ -63,9 +78,28 @@ namespace GameDiskManager.Types
 
         public Game (string dir, string name = "")
         {
-            Name = name;
+            Name = Regex.Replace(new DirectoryInfo(dir).Name, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0");
             Location = dir;
+            GameID = Data.Store.GameIndex++;
+
+            Drive d = Data.Store.Drives.Find(x => this.Location.Contains(x.Name));
+            DriveID = d.DriveID;
             Scan();
+            this.PercentDiskSpace = this.Size / d.TotalSize;
+        }
+
+        [JsonConstructor]
+        public Game(int launcherId, int gameId, int driveId, string name, string location)
+        {
+            LauncherID = launcherId;
+            GameID = gameId;
+            DriveID = driveId;
+            Name = name;
+            Location = location;
+
+            //Drive d = Data.Store.Drives.Find(x => x.DriveID == driveId);
+            Scan();
+            //this.PercentDiskSpace = this.Size / d.TotalSize;
         }
 
         private void Scan ()
@@ -84,9 +118,9 @@ namespace GameDiskManager.Types
 
                 GameFiles = appQuery.ToArray();
 
-                var gameExe = appQuery.Where(i => i.FileInfo.Extension == ".exe" && i.FileInfo.Directory.FullName == this.Location).MaxBy(i => i.Size);
+                //var gameExe = appQuery.Where(i => i.FileInfo.Extension == ".exe" && i.FileInfo.Directory.FullName == this.Location).MaxBy(i => i.Size);
 
-                this.Name = gameExe.First<GameFile>().FileInfo.Name.Replace(".exe", "");
+                //this.Name = gameExe.First<GameFile>().FileInfo.Name.Replace(".exe", "");
 
                 //Get all the sizes
                 long[] sizes = new long[files.Length];
@@ -144,14 +178,14 @@ namespace GameDiskManager.Types
                 };
                 FastMove.MoveGameItem(ref item);
 
-                GameFiles[i].MovingItem = item;
+                //GameFiles[i].MovingItem = item;
             }
-
+            /*
             Serializer<GameFile[]>
                 .WriteToJSONFile(GameFiles
-                .Where(x => x.MovingItem.MovingStatus == MigrationStatus.Failed)
+                .Where(x => x.MovingItem.Status == MigrationStatus.Failed)
                 .ToArray(), Path.Combine(dest, "failed.json"));
-
+            */
             Location = dest;
             Scan();
         }

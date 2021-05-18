@@ -23,25 +23,54 @@ namespace GameDiskManager.Forms
 
         private void InitializeGameList()
         {
-            DriveInfo[] allDrives = DriveInfo.GetDrives();
+            ReloadListView();
+        }
 
-            List<Drive> drives = new List<Drive>();
+        ListViewGroup[] groups = new ListViewGroup[Data.Store.Drives.Count];
 
-            foreach (DriveInfo d in allDrives)
+
+        private void ReloadListView()
+        {
+            gameList.Items.Clear();
+
+            for (int i = 0; i < Data.Store.Drives.Count; i++)
             {
-                Drive drive = new Drive
+                groups[i] = new ListViewGroup
                 {
-                    Name = d.Name,
-                    VolumeLabel = d.VolumeLabel,
-                    DriveType = d.DriveType,
-                    TotalSize = d.TotalSize,
-                    TotalFreeSpace = d.TotalFreeSpace,
-                    AvailableFreeSpace = d.AvailableFreeSpace,
-                    IsReady = d.IsReady,
-                    Active = true,
-                    Priority = 3,
+                    Header = String.Format("{1} ({0}) \r\n {2} free of {3}", 
+                        Data.Store.Drives[i].Name, Data.Store.Drives[i].VolumeLabel, Utils.BytesToString(Data.Store.Drives[i].AvailableFreeSpace), Utils.BytesToString(Data.Store.Drives[i].TotalSize)),
+                    Name = Data.Store.Drives[i].Name,
+                    Tag = Data.Store.Drives[i].DriveID
                 };
-                drives.Add(drive);
+                if (!gameList.Groups.Contains(groups[i]))
+                    gameList.Groups.Add(groups[i]);
+            }
+            foreach (Game g in Data.Store.Games)
+            {
+                string[] arr = { g.Name, g.EZSize, (g.PercentDiskSpace * 100).ToString() + "%", g.Priority.ToString(), g.Active.ToString() };
+                ListViewItem gi = new ListViewItem(arr);
+                gi.Tag = g.GameID;
+                gi.Group = Array.Find(groups, x => (int)x.Tag == g.DriveID);
+                gameList.Items.Add(gi);
+            }
+        }
+
+        private void toolStripAddGame_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string gamePath = fbd.SelectedPath;
+
+                    Data.Store.Games.Add(new Game(gamePath));
+
+                    Data.SaveDataStore();
+
+                    ReloadListView();
+                }
             }
         }
     }

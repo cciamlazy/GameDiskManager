@@ -26,7 +26,7 @@ namespace GameDiskManager.Types
             if (other is null)
                 return false;
 
-            return this.DriveID == other.DriveID && this.Name == other.Name;
+            return this.DriveID == other.DriveID || (this.Name == other.Name && this.TotalSize == other.TotalSize);
         }
 
         public override bool Equals(object obj) => Equals(obj as Drive);
