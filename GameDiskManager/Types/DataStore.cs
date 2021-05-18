@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,18 +12,71 @@ namespace GameDiskManager
 {
     public class DataStore
     {
-        public List<Drive> Drives { get; set; }
-        public List<Game> Games { get; set; }
-        public List<GameMigration> Migrations { get; set; }
+        public List<Drive> Drives { get; set; } = new List<Drive>();
+        public List<Game> Games { get; set; } = new List<Game>();
+        public List<GameMigration> Migrations { get; set; } = new List<GameMigration>();
+        public int DriveIndex { get; set; } = 0;
+        public int GameIndex { get; set; } = 0;
+        public int MigrationIndex { get; set; } = 0;
     }
     public static class Data
     {
-        public static DataStore Store { get; set; } 
+        public static DataStore Store { get; set; }
+        private static string SavePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "GameDiskManager\\DataStore.json");
         public static void InitializeDataStore()
         {
-            Store = Serializer<DataStore>.LoadFromJSONFile(
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "GameDiskManager\\DataStore.json"));
+            if (File.Exists(SavePath))
+            {
+                Store = Serializer<DataStore>.LoadFromJSONFile(SavePath);
+            }
+            else
+            {
+                Store = new DataStore
+                {
+                    Drives = new List<Drive>(),
+                    Games = new List<Game>(),
+                    Migrations = new List<GameMigration>()
+                };
+            }
+
+            LoadDrives();
+            SaveDataStore();
+        }
+
+        private static void LoadDrives()
+        {
+
+            DriveInfo[] allDrives = DriveInfo.GetDrives();
+
+            foreach (DriveInfo d in allDrives)
+            {
+                Drive drive = new Drive
+                {
+                    Name = d.Name,
+                    VolumeLabel = d.VolumeLabel,
+                    DriveType = d.DriveType,
+                    TotalSize = d.TotalSize,
+                    TotalFreeSpace = d.TotalFreeSpace,
+                    AvailableFreeSpace = d.AvailableFreeSpace,
+                    IsReady = d.IsReady,
+                    Active = true,
+                    Priority = 3,
+                };
+                int found = Store.Drives.FindIndex(x => x.Name == drive.Name && x.TotalSize == drive.TotalSize && x.DriveType == drive.DriveType);
+                if (found >= 0) // Drive exists
+                {
+                    Store.Drives[found].VolumeLabel = drive.VolumeLabel;
+                    Store.Drives[found].TotalFreeSpace = drive.TotalFreeSpace;
+                    Store.Drives[found].AvailableFreeSpace = drive.AvailableFreeSpace;
+                    Store.Drives[found].IsReady = drive.IsReady;
+                }
+                else
+                {
+                    drive.DriveID = Store.DriveIndex++;
+                    Store.Drives.Add(drive);
+                }
+            }
         }
 
         public static void UpdateData(List<Drive> drives)
@@ -45,6 +99,8 @@ namespace GameDiskManager
 
         public static void SaveDataStore()
         {
+            if (!Directory.Exists(Path.GetDirectoryName(SavePath)))
+                Directory.CreateDirectory(Path.GetDirectoryName(SavePath));
             Serializer<DataStore>.WriteToJSONFile(Store,
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "GameDiskManager\\DataStore.json"));
