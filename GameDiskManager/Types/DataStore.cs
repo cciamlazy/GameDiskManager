@@ -29,6 +29,8 @@ namespace GameDiskManager
             if (File.Exists(SavePath))
             {
                 Store = Serializer<DataStore>.LoadFromJSONFile(SavePath);
+                foreach (Game g in Store.Games)
+                    g.Scan();
             }
             else
             {

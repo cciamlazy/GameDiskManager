@@ -20,6 +20,7 @@ namespace GameDiskManager.Types
         public bool Active { get; set; }
         public int Priority { get; set; }
 
+        /// TODO: Implement winsat information
 
         public bool Equals(Drive other)
         {

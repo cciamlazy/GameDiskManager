@@ -78,14 +78,14 @@ namespace GameDiskManager.Types
 
         public Game (string dir, string name = "")
         {
-            Name = Regex.Replace(new DirectoryInfo(dir).Name, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0");
+            Name = Regex.Replace(new DirectoryInfo(dir).Name, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0").Replace("  ", " ");
             Location = dir;
             GameID = Data.Store.GameIndex++;
 
             Drive d = Data.Store.Drives.Find(x => this.Location.Contains(x.Name));
             DriveID = d.DriveID;
             Scan();
-            this.PercentDiskSpace = this.Size / d.TotalSize;
+            this.PercentDiskSpace = (double)this.Size / (double)d.TotalSize;
         }
 
         [JsonConstructor]
@@ -96,13 +96,9 @@ namespace GameDiskManager.Types
             DriveID = driveId;
             Name = name;
             Location = location;
-
-            //Drive d = Data.Store.Drives.Find(x => x.DriveID == driveId);
-            Scan();
-            //this.PercentDiskSpace = this.Size / d.TotalSize;
         }
 
-        private void Scan ()
+        public void Scan ()
         {
             Console.WriteLine("Scanning");
             if (Directory.Exists(Location))
@@ -142,6 +138,12 @@ namespace GameDiskManager.Types
                 for (int i = 0; i < GameFiles.Length; i++)
                 {
                     GameFiles[i].Location = GameFiles[i].Location.Replace(this.Location, "");
+                }
+
+                if (Data.Store != null && Data.Store.Drives != null)
+                {
+                    Drive d = Data.Store.Drives.Find(x => x.DriveID == this.DriveID);
+                    this.PercentDiskSpace = (double)this.Size / (double)d.TotalSize;
                 }
             }
             else
