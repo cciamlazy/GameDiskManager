@@ -27,34 +27,6 @@ namespace GameDiskManager.Forms
             InitMenuStrip();
         }
 
-
-        private ContextMenuStrip gameMenuOptions;
-
-        private void InitMenuStrip()
-        {
-            ToolStripItem[] toolStripItems = new ToolStripItem[Data.Store.Drives.Count];
-            for (int i = 0; i < Data.Store.Drives.Count; i++)
-            {
-                toolStripItems[i] = new ToolStripMenuItem { Text = "Migrate To " + Data.Store.Drives[i].Name, BackColor = Color.White, Tag = Data.Store.Drives[i].DriveID };
-                toolStripItems[i].Click += MoveToDriveItem_Click;
-            }
-            
-            gameMenuOptions = new ContextMenuStrip();
-            gameMenuOptions.Items.AddRange(toolStripItems);
-        }
-
-        private void MoveToDriveItem_Click(object sender, EventArgs e)
-        {
-            if (SelectedMenuItem == null || SelectedMenuItem.Tag == null)
-                return;
-
-            Console.WriteLine(sender.GetType().Name);
-            //ToolStripMenuItem pressed = (ToolStripMenuItem)sender;
-            //Data.Store.Drives.Find(x => x.DriveID == (int)pressed.Tag);
-            
-
-        }
-
         ListViewGroup[] groups = new ListViewGroup[Data.Store.Drives.Count];
 
 
@@ -84,25 +56,6 @@ namespace GameDiskManager.Forms
             }
             gameList.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             gameList.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-        }
-
-        private void toolStripAddGame_Click(object sender, EventArgs e)
-        {
-            using (var fbd = new FolderBrowserDialog())
-            {
-                DialogResult result = fbd.ShowDialog();
-
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
-                {
-                    string gamePath = fbd.SelectedPath;
-
-                    Data.Store.Games.Add(new Game(gamePath));
-
-                    Data.SaveDataStore();
-
-                    ReloadListView();
-                }
-            }
         }
 
         ListViewItem lviDraggedItem;
@@ -140,7 +93,97 @@ namespace GameDiskManager.Forms
             ListViewGroup lvgGroup = lviSibling.Group;
         }
 
-        private ListViewItem SelectedMenuItem;
+        #region Menu Option Events
+
+        private void toolStripAddGame_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string gamePath = fbd.SelectedPath;
+
+                    Data.Store.Games.Add(new Game(gamePath));
+
+                    Data.SaveDataStore();
+
+                    ReloadListView();
+                }
+            }
+        }
+
+        private void EditGameItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedGameItem == null || SelectedGameItem.Tag == null)
+                return;
+
+            Game game = Data.Store.Games.Find(x => x.GameID == (int)SelectedGameItem.Tag);
+            using(GameConfig gc = new GameConfig(game))
+            {
+                if (gc.ShowDialog() == DialogResult.OK)
+                {
+                    Data.Store.Games.
+                }
+            }
+        }
+
+        private void RemoveGameItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripNewMigration_Click(object sender, EventArgs e)
+        {
+
+        }
+        #endregion
+
+        #region RightClickMenu
+
+        private ListViewItem SelectedGameItem;
+        private ContextMenuStrip gameMenuOptions;
+        const int staticMenuItems = 5;
+
+        private void InitMenuStrip()
+        {
+            ToolStripItem[] toolStripItems = new ToolStripItem[staticMenuItems + Data.Store.Drives.Count];
+
+            // Static menu items
+            toolStripItems[0] = new ToolStripMenuItem { Text = "Add Game", BackColor = Color.White };
+            toolStripItems[0].Click += toolStripAddGame_Click;
+
+            toolStripItems[1] = new ToolStripMenuItem { Text = "Edit Game Config", BackColor = Color.White };
+            toolStripItems[1].Click += EditGameItem_Click;
+
+            toolStripItems[2] = new ToolStripMenuItem { Text = "Remove Game", BackColor = Color.White };
+            toolStripItems[2].Click += RemoveGameItem_Click;
+
+            toolStripItems[3] = new ToolStripMenuItem { Text = "New Migration", BackColor = Color.White };
+            toolStripItems[3].Click += toolStripNewMigration_Click;
+
+            toolStripItems[staticMenuItems - 1] = new ToolStripMenuItem { Text = "Quick Migrate:", BackColor = Color.White, Enabled = false };
+
+            // Dynamic drive items
+            for (int i = 0; i < Data.Store.Drives.Count; i++)
+            {
+                toolStripItems[staticMenuItems + i] = new ToolStripMenuItem { Text = "Migrate To " + Data.Store.Drives[i].Name, BackColor = Color.White, Tag = Data.Store.Drives[i].DriveID };
+                toolStripItems[staticMenuItems + i].Click += MoveToDriveItem_Click;
+            }
+
+            gameMenuOptions = new ContextMenuStrip();
+            gameMenuOptions.Items.AddRange(toolStripItems);
+        }
+
+        private void MoveToDriveItem_Click(object sender, EventArgs e)
+        {
+            if (SelectedGameItem == null || SelectedGameItem.Tag == null)
+                return;
+
+            ToolStripMenuItem pressed = (ToolStripMenuItem)sender;
+            Drive d = Data.Store.Drives.Find(x => x.DriveID == (int)pressed.Tag);
+        }
 
         /// <summary>
         /// Open Menu when right clicking game item
@@ -153,18 +196,43 @@ namespace GameDiskManager.Forms
             {
                 if ((gameList.FocusedItem != null && gameList.FocusedItem.Bounds.Contains(e.Location)) || (gameList.SelectedItems != null && gameList.SelectedItems.Count == 1 && gameList.SelectedItems[0].Bounds.Contains(e.Location)))
                 {
-                    gameMenuOptions.Show(Cursor.Position);
-                    SelectedMenuItem = gameList.FocusedItem;
-                    Game g = Data.Store.Games.Find(x => x.GameID == (int)SelectedMenuItem.Tag);
+                    SelectedGameItem = gameList.FocusedItem;
+                    Game g = Data.Store.Games.Find(x => x.GameID == (int)SelectedGameItem.Tag);
 
+                    gameMenuOptions.Items[1].Visible = true;
+                    gameMenuOptions.Items[2].Visible = true;
+                    gameMenuOptions.Items[staticMenuItems - 1].Visible = true;
                     // Set current drive to not be visible on context menu
-                    for (int i = 0; i < gameMenuOptions.Items.Count; i++)
+                    for (int i = staticMenuItems; i < gameMenuOptions.Items.Count; i++)
+                    {
+                        bool enabled = true;
+                        Drive d = Data.Store.Drives.Find(x => x.DriveID == (int)gameMenuOptions.Items[i].Tag);
+                        if (d.AvailableFreeSpace + d.KeepSpaceAvailable < g.Size)
+                        {
+                            enabled = false;
+                            gameMenuOptions.Items[i].Text = gameMenuOptions.Items[i].Text + " (Not enough space)";
+                        }
+                        else
+                        {
+                            enabled = true;
+                            gameMenuOptions.Items[i].Text = gameMenuOptions.Items[i].Text.Replace(" (Not enough space)", "");
+                        }
+                        gameMenuOptions.Items[i].Enabled = enabled;
                         gameMenuOptions.Items[i].Visible = i == IndexOf(gameMenuOptions.Items, g.DriveID) ? false : true;
-                                    }
+                    }
+                    gameMenuOptions.Show(Cursor.Position);
+                }
                 else
                 {
+                    gameMenuOptions.Items[1].Visible = false;
+                    gameMenuOptions.Items[2].Visible = false;
+                    gameMenuOptions.Items[staticMenuItems - 1].Visible = false;
+                    for (int i = staticMenuItems; i < gameMenuOptions.Items.Count; i++)
+                    {
+                        gameMenuOptions.Items[i].Visible = false;
+                    }
                     gameMenuOptions.Show(Cursor.Position);
-                    SelectedMenuItem = null;
+                    SelectedGameItem = null;
                 }
             }
         }
@@ -173,7 +241,7 @@ namespace GameDiskManager.Forms
         {
             for (int i = 0; i < list.Count; i++)
             {
-                if ((int)list[i].Tag == value)
+                if (list[i].Tag != null && (int)list[i].Tag == value)
                 {
                     return i;
                 }
@@ -181,5 +249,7 @@ namespace GameDiskManager.Forms
 
             return -1;
         }
+
+        #endregion
     }
 }

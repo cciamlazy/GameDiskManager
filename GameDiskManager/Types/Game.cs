@@ -42,6 +42,8 @@ namespace GameDiskManager.Types
     
     public class ConfigFile
     {
+        public string Location { get; set; }
+        public bool KeepLocation { get; set; }
 
     }
     public class Game : IEquatable<Game>
@@ -74,7 +76,7 @@ namespace GameDiskManager.Types
         public DateTime LastPlayed { get; set; }
         public int PlayTime { get; set; }
         public bool Active { get; set; }
-        public ConfigFile[] ConfigFiles { get; set; }
+        public List<ConfigFile> ConfigFiles { get; set; }
 
         public Game (string dir, string name = "")
         {

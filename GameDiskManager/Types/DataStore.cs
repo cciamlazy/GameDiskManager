@@ -93,6 +93,20 @@ namespace GameDiskManager
             SaveDataStore();
         }
 
+        public static void UpdateGame(Game game)
+        {
+            int gameIndex = Store.Games.FindIndex(x => x.GameID == game.GameID);
+            Store.Games[gameIndex].Name = game.Name;
+            Store.Games[gameIndex].LauncherID = game.LauncherID;
+            Store.Games[gameIndex].Location = game.Location;
+            Store.Games[gameIndex].Folders = game.Folders;
+            Store.Games[gameIndex].GameFiles = game.GameFiles;
+            Store.Games[gameIndex].Priority = game.Priority;
+            Store.Games[gameIndex].Active = game.Active;
+            Store.Games[gameIndex].ConfigFiles = game.ConfigFiles;
+            SaveDataStore();
+        }
+
         public static void UpdateData(List<GameMigration> migrations)
         {
             Store.Migrations.AddRange(Store.Migrations.Except<GameMigration>(migrations).ToList());
