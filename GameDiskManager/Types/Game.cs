@@ -1,12 +1,15 @@
 ﻿using GameDiskManager.Utility;
-using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MoreLinq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using LiteDB;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace GameDiskManager.Types
 {
@@ -16,19 +19,38 @@ namespace GameDiskManager.Types
         public string Location { get; set; }
         public long Size { get; set; }
         public string EZSize { get; set; }
-        public FileInfo FileInfo { get; set; }
-        public MovingItem MovingItem { get; set; }
 
-        public GameFile (string dir)
+        public GameFile(string location)
         {
-            Location = dir;
-            this.FileInfo = new FileInfo(dir);
-            this.Size = this.FileInfo.Length;
-            this.EZSize = Game.BytesToString(this.Size);
+            Location = location;
+            if (location != null)
+            {
+                var FileInfo = new FileInfo(location);
+                this.Size = FileInfo.Length;
+                this.EZSize = Utils.BytesToString(this.Size);
+            }
+        }
+
+        [JsonConstructor]
+        public GameFile (string location, long size, string ezSize)
+        {
+            Location = location;
+            this.Size = size;
+            this.EZSize = ezSize;
         }
     }
-    public class Game
+    
+    public class ConfigFile
     {
+        public string Location { get; set; }
+        public bool KeepLocation { get; set; }
+
+    }
+    public class Game : IEquatable<Game>
+    {
+        public int LauncherID { get; set; }
+        public int GameID { get; set; }
+        public int DriveID { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
         private long _size { get
@@ -38,22 +60,47 @@ namespace GameDiskManager.Types
             set
             {
                 Size = value;
-                EZSize = BytesToString(value);
+                EZSize = Utils.BytesToString(value);
             } 
         }
         public long Size { get; set; }
         public string EZSize { get; set; }
+        public double PercentDiskSpace { get; set; }
+
+        [JsonIgnore]
         public string[] Folders { get; set; }
+
+        [JsonIgnore]
         public GameFile[] GameFiles { get; set; }
+        public int Priority { get; set; }
+        public DateTime LastPlayed { get; set; }
+        public int PlayTime { get; set; }
+        public bool Active { get; set; }
+        public List<ConfigFile> ConfigFiles { get; set; }
 
         public Game (string dir, string name = "")
         {
-            Name = name;
+            Name = Regex.Replace(new DirectoryInfo(dir).Name, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0").Replace("  ", " ");
             Location = dir;
+            GameID = Data.Store.GameIndex++;
+
+            Drive d = Data.Store.Drives.Find(x => this.Location.Contains(x.Name));
+            DriveID = d.DriveID;
             Scan();
+            this.PercentDiskSpace = (double)this.Size / (double)d.TotalSize;
         }
 
-        private void Scan ()
+        [JsonConstructor]
+        public Game(int launcherId, int gameId, int driveId, string name, string location)
+        {
+            LauncherID = launcherId;
+            GameID = gameId;
+            DriveID = driveId;
+            Name = name;
+            Location = location;
+        }
+
+        public void Scan ()
         {
             Console.WriteLine("Scanning");
             if (Directory.Exists(Location))
@@ -69,9 +116,9 @@ namespace GameDiskManager.Types
 
                 GameFiles = appQuery.ToArray();
 
-                var gameExe = appQuery.Where(i => i.FileInfo.Extension == ".exe" && i.FileInfo.Directory.FullName == this.Location).MaxBy(i => i.Size);
+                //var gameExe = appQuery.Where(i => i.FileInfo.Extension == ".exe" && i.FileInfo.Directory.FullName == this.Location).MaxBy(i => i.Size);
 
-                this.Name = gameExe.First<GameFile>().FileInfo.Name.Replace(".exe", "");
+                //this.Name = gameExe.First<GameFile>().FileInfo.Name.Replace(".exe", "");
 
                 //Get all the sizes
                 long[] sizes = new long[files.Length];
@@ -94,6 +141,12 @@ namespace GameDiskManager.Types
                 {
                     GameFiles[i].Location = GameFiles[i].Location.Replace(this.Location, "");
                 }
+
+                if (Data.Store != null && Data.Store.Drives != null)
+                {
+                    Drive d = Data.Store.Drives.Find(x => x.DriveID == this.DriveID);
+                    this.PercentDiskSpace = (double)this.Size / (double)d.TotalSize;
+                }
             }
             else
             {
@@ -104,6 +157,8 @@ namespace GameDiskManager.Types
 
         public void Migrate (string dest)
         {
+            this.Scan();
+
             Console.WriteLine("Migrating game: " + this.Name);
 
             if (!Directory.Exists(dest))
@@ -118,36 +173,36 @@ namespace GameDiskManager.Types
 
             for (int i = 0; i < GameFiles.Length; i++)
             {
-                MovingItem item = new MovingItem()
+                MigrationFile item = new MigrationFile()
                 {
                     source = Location + GameFiles[i].Location,
                     destination = dest + GameFiles[i].Location,
                     size = GameFiles[i].Size,
-                    MovingStatus = MovingStatus.Pending
+                    Status = MigrationStatus.Pending
                 };
                 FastMove.MoveGameItem(ref item);
 
-                GameFiles[i].MovingItem = item;
+                //GameFiles[i].MovingItem = item;
             }
-
+            /*
             Serializer<GameFile[]>
                 .WriteToJSONFile(GameFiles
-                .Where(x => x.MovingItem.MovingStatus == MovingStatus.Failed)
+                .Where(x => x.MovingItem.Status == MigrationStatus.Failed)
                 .ToArray(), Path.Combine(dest, "failed.json"));
-
+            */
             Location = dest;
             Scan();
         }
 
-        public static string BytesToString(long byteCount)
+        public bool Equals(Game other)
         {
-            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
-            if (byteCount == 0)
-                return "0" + suf[0];
-            long bytes = Math.Abs(byteCount);
-            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
-            return (Math.Sign(byteCount) * num).ToString() + suf[place];
+            if (other is null)
+                return false;
+
+            return this.GameID == other.GameID && this.Location == other.Location;
         }
+
+        public override bool Equals(object obj) => Equals(obj as Game);
+        public override int GetHashCode() => (GameID, Location).GetHashCode();
     }
 }
