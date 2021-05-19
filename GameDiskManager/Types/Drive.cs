@@ -16,6 +16,7 @@ namespace GameDiskManager.Types
         public long TotalSize { get; set; }
         public long TotalFreeSpace { get; set; }
         public long AvailableFreeSpace { get; set; }
+        public long KeepSpaceAvailable { get; set; }
         public bool IsReady { get; set; }
         public bool Active { get; set; }
         public int Priority { get; set; }

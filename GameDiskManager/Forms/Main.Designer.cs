@@ -38,8 +38,9 @@ namespace GameDiskManager.Forms
             this.priority = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.active = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.toolStrip = new System.Windows.Forms.ToolStrip();
-            this.toolStripFile = new System.Windows.Forms.ToolStripDropDownButton();
+            this.toolStripManage = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripAddGame = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripNewMigration = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -97,33 +98,43 @@ namespace GameDiskManager.Forms
             // 
             this.toolStrip.BackColor = System.Drawing.Color.White;
             this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripFile});
+            this.toolStripManage});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolStrip.Name = "toolStrip";
             this.toolStrip.Size = new System.Drawing.Size(588, 25);
             this.toolStrip.TabIndex = 1;
             this.toolStrip.Text = "toolStrip1";
             // 
-            // toolStripFile
+            // toolStripManage
             // 
-            this.toolStripFile.BackColor = System.Drawing.Color.White;
-            this.toolStripFile.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripAddGame});
-            this.toolStripFile.Image = ((System.Drawing.Image)(resources.GetObject("toolStripFile.Image")));
-            this.toolStripFile.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripFile.Name = "toolStripFile";
-            this.toolStripFile.Size = new System.Drawing.Size(38, 22);
-            this.toolStripFile.Text = "File";
+            this.toolStripManage.BackColor = System.Drawing.Color.White;
+            this.toolStripManage.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripManage.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripAddGame,
+            this.toolStripNewMigration});
+            this.toolStripManage.Image = ((System.Drawing.Image)(resources.GetObject("toolStripManage.Image")));
+            this.toolStripManage.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripManage.Name = "toolStripManage";
+            this.toolStripManage.Size = new System.Drawing.Size(63, 22);
+            this.toolStripManage.Text = "Manage";
             // 
             // toolStripAddGame
             // 
             this.toolStripAddGame.BackColor = System.Drawing.Color.White;
             this.toolStripAddGame.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripAddGame.Name = "toolStripAddGame";
-            this.toolStripAddGame.Size = new System.Drawing.Size(130, 22);
+            this.toolStripAddGame.Size = new System.Drawing.Size(180, 22);
             this.toolStripAddGame.Text = "Add Game";
             this.toolStripAddGame.Click += new System.EventHandler(this.toolStripAddGame_Click);
+            // 
+            // toolStripNewMigration
+            // 
+            this.toolStripNewMigration.BackColor = System.Drawing.Color.White;
+            this.toolStripNewMigration.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripNewMigration.Name = "toolStripNewMigration";
+            this.toolStripNewMigration.Size = new System.Drawing.Size(180, 22);
+            this.toolStripNewMigration.Text = "New Migration";
+            this.toolStripNewMigration.Click += new System.EventHandler(this.toolStripNewMigration_Click);
             // 
             // Main
             // 
@@ -153,7 +164,8 @@ namespace GameDiskManager.Forms
         private System.Windows.Forms.ColumnHeader priority;
         private System.Windows.Forms.ColumnHeader active;
         private System.Windows.Forms.ToolStrip toolStrip;
-        private System.Windows.Forms.ToolStripDropDownButton toolStripFile;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripManage;
         private System.Windows.Forms.ToolStripMenuItem toolStripAddGame;
+        private System.Windows.Forms.ToolStripMenuItem toolStripNewMigration;
     }
 }
