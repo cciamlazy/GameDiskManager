@@ -66,6 +66,11 @@ namespace GameDiskManager.Forms
             this.gameList.TabIndex = 0;
             this.gameList.UseCompatibleStateImageBehavior = false;
             this.gameList.View = System.Windows.Forms.View.Details;
+            this.gameList.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.gameList_ItemDrag);
+            this.gameList.DragDrop += new System.Windows.Forms.DragEventHandler(this.gameList_DragDrop);
+            this.gameList.DragEnter += new System.Windows.Forms.DragEventHandler(this.gameList_DragEnter);
+            this.gameList.DragOver += new System.Windows.Forms.DragEventHandler(this.gameList_DragOver);
+            this.gameList.MouseUp += new System.Windows.Forms.MouseEventHandler(this.gameList_MouseUp);
             // 
             // game
             // 
@@ -116,7 +121,7 @@ namespace GameDiskManager.Forms
             this.toolStripAddGame.BackColor = System.Drawing.Color.White;
             this.toolStripAddGame.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripAddGame.Name = "toolStripAddGame";
-            this.toolStripAddGame.Size = new System.Drawing.Size(180, 22);
+            this.toolStripAddGame.Size = new System.Drawing.Size(130, 22);
             this.toolStripAddGame.Text = "Add Game";
             this.toolStripAddGame.Click += new System.EventHandler(this.toolStripAddGame_Click);
             // 
