@@ -86,6 +86,9 @@
     <Compile Include="Types\Drive.cs" />
     <Compile Include="Types\Game.cs" />
     <Compile Include="Types\GameMigration.cs" />
+    <Compile Include="Types\Games\SteamGame.cs" />
+    <Compile Include="Types\Launcher.cs" />
+    <Compile Include="Types\Launchers\Steam.cs" />
     <Compile Include="Utility\DepthSearch.cs" />
     <Compile Include="Utility\FastMove.cs" />
     <Compile Include="Utility\Serializer.cs" />
