@@ -31,6 +31,20 @@ namespace GameDiskManager.Types
             return this.DriveID == other.DriveID || (this.Name == other.Name && this.TotalSize == other.TotalSize);
         }
 
+        public async void RunWinSatTest()
+        {
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            startInfo.FileName = "cmd.exe";
+            startInfo.Arguments = String.Format("winsat disk -drive {0} -xml {1}{2}.xml", Name.Replace(":\\", ""), Data.SavePath + "\\winsat\\", Name.Replace(":\\", ""));
+            process.StartInfo = startInfo;
+            process.Start();
+
+            // Wait until file is written
+            await Task.Delay(5000);
+        }
+
         public override bool Equals(object obj) => Equals(obj as Drive);
         public override int GetHashCode() => (DriveID, Name).GetHashCode();
     }

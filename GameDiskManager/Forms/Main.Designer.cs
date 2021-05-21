@@ -41,6 +41,8 @@ namespace GameDiskManager.Forms
             this.toolStripManage = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripAddGame = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripNewMigration = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripLaunchers = new System.Windows.Forms.ToolStripDropDownButton();
+            this.addLauncherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -98,7 +100,8 @@ namespace GameDiskManager.Forms
             // 
             this.toolStrip.BackColor = System.Drawing.Color.White;
             this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripManage});
+            this.toolStripManage,
+            this.toolStripLaunchers});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolStrip.Name = "toolStrip";
             this.toolStrip.Size = new System.Drawing.Size(588, 25);
@@ -123,7 +126,7 @@ namespace GameDiskManager.Forms
             this.toolStripAddGame.BackColor = System.Drawing.Color.White;
             this.toolStripAddGame.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripAddGame.Name = "toolStripAddGame";
-            this.toolStripAddGame.Size = new System.Drawing.Size(180, 22);
+            this.toolStripAddGame.Size = new System.Drawing.Size(153, 22);
             this.toolStripAddGame.Text = "Add Game";
             this.toolStripAddGame.Click += new System.EventHandler(this.toolStripAddGame_Click);
             // 
@@ -132,9 +135,26 @@ namespace GameDiskManager.Forms
             this.toolStripNewMigration.BackColor = System.Drawing.Color.White;
             this.toolStripNewMigration.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripNewMigration.Name = "toolStripNewMigration";
-            this.toolStripNewMigration.Size = new System.Drawing.Size(180, 22);
+            this.toolStripNewMigration.Size = new System.Drawing.Size(153, 22);
             this.toolStripNewMigration.Text = "New Migration";
             this.toolStripNewMigration.Click += new System.EventHandler(this.toolStripNewMigration_Click);
+            // 
+            // toolStripLaunchers
+            // 
+            this.toolStripLaunchers.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripLaunchers.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addLauncherToolStripMenuItem});
+            this.toolStripLaunchers.Image = ((System.Drawing.Image)(resources.GetObject("toolStripLaunchers.Image")));
+            this.toolStripLaunchers.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripLaunchers.Name = "toolStripLaunchers";
+            this.toolStripLaunchers.Size = new System.Drawing.Size(74, 22);
+            this.toolStripLaunchers.Text = "Launchers";
+            // 
+            // addLauncherToolStripMenuItem
+            // 
+            this.addLauncherToolStripMenuItem.Name = "addLauncherToolStripMenuItem";
+            this.addLauncherToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addLauncherToolStripMenuItem.Text = "Add Launcher";
             // 
             // Main
             // 
@@ -167,5 +187,7 @@ namespace GameDiskManager.Forms
         private System.Windows.Forms.ToolStripDropDownButton toolStripManage;
         private System.Windows.Forms.ToolStripMenuItem toolStripAddGame;
         private System.Windows.Forms.ToolStripMenuItem toolStripNewMigration;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripLaunchers;
+        private System.Windows.Forms.ToolStripMenuItem addLauncherToolStripMenuItem;
     }
 }

@@ -18,6 +18,7 @@ namespace GameDiskManager.Forms
         public Main()
         {
             InitializeComponent();
+            InitializeLaunchers();
             InitializeGameList();
         }
 
@@ -29,6 +30,37 @@ namespace GameDiskManager.Forms
 
         ListViewGroup[] groups = new ListViewGroup[Data.Store.Drives.Count];
 
+        ToolStripMenuItem[] launcherMenuItems;
+        ToolStripMenuItem[,] launcherMenuSubItems;
+
+        private void InitializeLaunchers()
+        {
+            launcherMenuItems = new ToolStripMenuItem[Data.Store.Launchers.Count];
+            launcherMenuSubItems = new ToolStripMenuItem[Data.Store.Launchers.Count,2];
+            for (int i = 0; i < Data.Store.Launchers.Count; i++)
+            {
+                Launcher l = Data.Store.Launchers[i];
+                // 
+                // scanMenuItem
+                // 
+                launcherMenuSubItems[i, 0] = new ToolStripMenuItem();
+                launcherMenuSubItems[i, 0].Name = l.Name + "ScanMenuItem";
+                launcherMenuSubItems[i, 0].Size = new System.Drawing.Size(180, 22);
+                launcherMenuSubItems[i, 0].Text = "Scan";
+                launcherMenuSubItems[i, 0].Tag = l.LauncherID;
+                launcherMenuSubItems[i, 0].Click += launcherScanMenu_Click;
+
+                // 
+                // LauncherMenuItem
+                // 
+                launcherMenuItems[i] = new ToolStripMenuItem();
+                launcherMenuItems[i].DropDownItems.AddRange(new ToolStripItem[] { launcherMenuSubItems[i, 0] });
+                launcherMenuItems[i].Name = l.Name + "MenuItem";
+                launcherMenuItems[i].Size = new System.Drawing.Size(180, 22);
+                launcherMenuItems[i].Text = l.Name; 
+            }
+            this.toolStripLaunchers.DropDownItems.AddRange(launcherMenuItems);
+        }
 
         private void ReloadListView()
         {
@@ -124,7 +156,7 @@ namespace GameDiskManager.Forms
             {
                 if (gc.ShowDialog() == DialogResult.OK)
                 {
-                    Data.Store.Games.
+                    //Data.Store.Games.
                 }
             }
         }
@@ -137,6 +169,13 @@ namespace GameDiskManager.Forms
         private void toolStripNewMigration_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void launcherScanMenu_Click(object sender, EventArgs e)
+        {
+            if (sender == null || ((ToolStripMenuItem)sender).Tag == null)
+                return;
+            Data.Store.Launchers[Data.Store.Launchers.FindIndex(x => x.LauncherID == (int)((ToolStripMenuItem)sender).Tag)].ScanGames();
         }
         #endregion
 

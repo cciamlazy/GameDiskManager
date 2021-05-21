@@ -6,12 +6,19 @@ using System.Threading.Tasks;
 
 namespace GameDiskManager.Types
 {
+    public enum LauncherType
+    {
+        Steam
+    }
     public class Launcher
     {
         public int LauncherID { get; set; }
         public int DriveID { get; set; }
+        public string Name { get; set; }
+        public string Location { get; set; }
+        public LauncherType LauncherType { get; set; }
 
-        protected virtual void ScanGames()
+        public virtual void ScanGames()
         {
 
         }

@@ -78,7 +78,11 @@ namespace GameDiskManager.Utility
         /// <returns>Returns the Object that it constructed out of the JSON string</returns>
         public static T JSONStringToObject(string jsonText)
         {
-            return JsonConvert.DeserializeObject<T>(jsonText);
+            JsonSerializerSettings settings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All
+            };
+            return JsonConvert.DeserializeObject<T>(jsonText, settings);
         }
 
         /// <summary>
@@ -90,6 +94,7 @@ namespace GameDiskManager.Utility
         {
             JsonSerializer serializer = new JsonSerializer();
             serializer.NullValueHandling = NullValueHandling.Include;
+            serializer.TypeNameHandling = TypeNameHandling.All;
 
             using (StreamWriter sw = new StreamWriter(path))
             {

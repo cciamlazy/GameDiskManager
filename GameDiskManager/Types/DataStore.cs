@@ -7,28 +7,32 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Win32;
+using GameDiskManager.Types.Launchers;
 
 namespace GameDiskManager
 {
     public class DataStore
     {
         public List<Drive> Drives { get; set; } = new List<Drive>();
+        public List<Launcher> Launchers { get; set; } = new List<Launcher>();
         public List<Game> Games { get; set; } = new List<Game>();
         public List<GameMigration> Migrations { get; set; } = new List<GameMigration>();
         public int DriveIndex { get; set; } = 0;
+        public int LauncherIndex { get; set; } = 0;
         public int GameIndex { get; set; } = 0;
         public int MigrationIndex { get; set; } = 0;
     }
     public static class Data
     {
         public static DataStore Store { get; set; }
-        private static string SavePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "GameDiskManager\\DataStore.json");
+        public static string SavePath { get; private set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "GameDiskManager\\");
         public static void InitializeDataStore()
         {
-            if (File.Exists(SavePath))
+            if (File.Exists(SavePath + "DataStore.json"))
             {
-                Store = Serializer<DataStore>.LoadFromJSONFile(SavePath);
+                Store = Serializer<DataStore>.LoadFromJSONFile(SavePath + "DataStore.json");
                 foreach (Game g in Store.Games)
                     g.Scan();
             }
@@ -43,6 +47,7 @@ namespace GameDiskManager
             }
 
             LoadDrives();
+            LocateLaunchers();
             SaveDataStore();
         }
 
@@ -81,6 +86,29 @@ namespace GameDiskManager
             }
         }
 
+        private static void LocateLaunchers()
+        {
+            var mainSteamDir = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam", "InstallPath", "") ?? Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Valve\Steam", "InstallPath", "");
+
+            DirectoryInfo steamDir = new DirectoryInfo(mainSteamDir.ToString());
+
+            if (steamDir.Exists)
+            {
+                //Console.WriteLine(Serializer<Launcher>.ObjectToJSONString(Store.Launchers.Find(x => x.LauncherType == LauncherType.Steam)));
+                if (Store.Launchers.Find(x => x.LauncherType == LauncherType.Steam) == null)
+                {
+                    Store.Launchers.Add(new Steam
+                    {
+                        LauncherID = Store.LauncherIndex++,
+                        LauncherType = LauncherType.Steam,
+                        Name = "Steam",
+                        Location = steamDir.FullName,
+                        DriveID = Store.Drives.Find(x => steamDir.FullName.Contains(x.Name)).DriveID
+                    });
+                }
+            }
+        }
+
         public static void UpdateData(List<Drive> drives)
         {
             Store.Drives.AddRange(Store.Drives.Except<Drive>(drives).ToList());
@@ -115,7 +143,7 @@ namespace GameDiskManager
 
         public static void SaveDataStore()
         {
-            if (!Directory.Exists(Path.GetDirectoryName(SavePath)))
+            if (!Directory.Exists(Path.GetDirectoryName(SavePath + "DataStore.json")))
                 Directory.CreateDirectory(Path.GetDirectoryName(SavePath));
             Serializer<DataStore>.WriteToJSONFile(Store,
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
