@@ -9,10 +9,12 @@ namespace GameDiskManager.Types.Games.Steam
 {
     class Steam_vdf : VProperty
     {
-        public int appid { get; set; }
+        public string TimeNextStatsReport { get; set; }
+        public string ContentStatsID { get; set; }
+        public string[] Directories { get; set; }
         public Steam_vdf(VProperty other) : base(other)
         {
-
+            //other.Where(x => x.)
         }
     }
 }

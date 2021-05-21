@@ -8,6 +8,7 @@ namespace GameDiskManager.Types.Games
 {
     public class SteamGame : Game
     {
+        public string appid { get; set; }
         public SteamGame(string dir) : base(dir)
         {
 

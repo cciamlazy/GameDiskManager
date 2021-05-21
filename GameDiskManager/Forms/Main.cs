@@ -176,6 +176,8 @@ namespace GameDiskManager.Forms
             if (sender == null || ((ToolStripMenuItem)sender).Tag == null)
                 return;
             Data.Store.Launchers[Data.Store.Launchers.FindIndex(x => x.LauncherID == (int)((ToolStripMenuItem)sender).Tag)].ScanGames();
+
+            ReloadListView();
         }
         #endregion
 
