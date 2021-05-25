@@ -29,6 +29,7 @@ namespace GameDiskManager.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("C:/", System.Windows.Forms.HorizontalAlignment.Left);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.gameList = new System.Windows.Forms.ListView();
@@ -38,11 +39,14 @@ namespace GameDiskManager.Forms
             this.priority = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.active = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.toolStrip = new System.Windows.Forms.ToolStrip();
+            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripManage = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripAddGame = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripNewMigration = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripLaunchers = new System.Windows.Forms.ToolStripDropDownButton();
             this.addLauncherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.image = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.gameImages = new System.Windows.Forms.ImageList(this.components);
             this.toolStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -50,6 +54,7 @@ namespace GameDiskManager.Forms
             // 
             this.gameList.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.gameList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.image,
             this.game,
             this.size,
             this.diskTaken,
@@ -100,6 +105,7 @@ namespace GameDiskManager.Forms
             // 
             this.toolStrip.BackColor = System.Drawing.Color.White;
             this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripDropDownButton1,
             this.toolStripManage,
             this.toolStripLaunchers});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
@@ -107,6 +113,15 @@ namespace GameDiskManager.Forms
             this.toolStrip.Size = new System.Drawing.Size(588, 25);
             this.toolStrip.TabIndex = 1;
             this.toolStrip.Text = "toolStrip1";
+            // 
+            // toolStripDropDownButton1
+            // 
+            this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
+            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            this.toolStripDropDownButton1.Size = new System.Drawing.Size(38, 22);
+            this.toolStripDropDownButton1.Text = "File";
             // 
             // toolStripManage
             // 
@@ -153,8 +168,19 @@ namespace GameDiskManager.Forms
             // addLauncherToolStripMenuItem
             // 
             this.addLauncherToolStripMenuItem.Name = "addLauncherToolStripMenuItem";
-            this.addLauncherToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addLauncherToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.addLauncherToolStripMenuItem.Text = "Add Launcher";
+            // 
+            // image
+            // 
+            this.image.Text = "•";
+            this.image.Width = 30;
+            // 
+            // gameImages
+            // 
+            this.gameImages.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
+            this.gameImages.ImageSize = new System.Drawing.Size(16, 16);
+            this.gameImages.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // Main
             // 
@@ -189,5 +215,8 @@ namespace GameDiskManager.Forms
         private System.Windows.Forms.ToolStripMenuItem toolStripNewMigration;
         private System.Windows.Forms.ToolStripDropDownButton toolStripLaunchers;
         private System.Windows.Forms.ToolStripMenuItem addLauncherToolStripMenuItem;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
+        private System.Windows.Forms.ColumnHeader image;
+        private System.Windows.Forms.ImageList gameImages;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameDiskManager.Forms;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,11 +17,12 @@ namespace GameDiskManager.Types
         public int DriveID { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
+        public string ExecutableLocation { get; set; }
         public LauncherType LauncherType { get; set; }
 
-        public virtual void ScanGames()
+        public async virtual Task<bool> ScanGames()
         {
-
+            return true;
         }
     }
 }

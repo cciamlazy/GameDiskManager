@@ -33,8 +33,8 @@ namespace GameDiskManager
             if (File.Exists(SavePath + "DataStore.json"))
             {
                 Store = Serializer<DataStore>.LoadFromJSONFile(SavePath + "DataStore.json");
-                foreach (Game g in Store.Games)
-                    g.Scan();
+                /*foreach (Game g in Store.Games)
+                    g.Scan();*/
             }
             else
             {
@@ -103,9 +103,19 @@ namespace GameDiskManager
                         LauncherType = LauncherType.Steam,
                         Name = "Steam",
                         Location = steamDir.FullName,
+                        ExecutableLocation = steamDir.FullName + "\\steam.exe",
                         DriveID = Store.Drives.Find(x => steamDir.FullName.Contains(x.Name)).DriveID
                     });
                 }
+                else
+                {
+
+                }
+                // TODO: Implement Icon Loading.. Probably for games too
+                /*if (File.Exists() && !File.Exists(SavePath + "\\Resources\\Launch"))
+                {
+                    Icon.ExtractAssociatedIcon(l.ExecutableLocation)
+                }*/
             }
         }
 

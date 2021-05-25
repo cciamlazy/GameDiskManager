@@ -19,6 +19,7 @@ namespace GameDiskManager.Types
         public string Location { get; set; }
         public long Size { get; set; }
         public string EZSize { get; set; }
+        public int exeRank { get; set; }
 
         public GameFile(string location)
         {
@@ -53,6 +54,7 @@ namespace GameDiskManager.Types
         public int DriveID { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
+        public string ExecutableLocation { get; set; }
         private long _size { get
             {
                 return Size;
@@ -116,7 +118,27 @@ namespace GameDiskManager.Types
 
                 GameFiles = appQuery.ToArray();
 
-                //var gameExe = appQuery.Where(i => i.FileInfo.Extension == ".exe" && i.FileInfo.Directory.FullName == this.Location).MaxBy(i => i.Size);
+                /*foreach (GameFile f in )
+                {
+                    FileInfo info = new FileInfo(f.Location);
+
+                    Console.WriteLine(info.Extension);
+                    int rank = 0;
+                    if (info.Extension == ".exe") rank += 1;
+                    if (info.Name.Replace(".exe", "").Replace(" ", "").ToLower().Contains(info.Directory.Name)) rank += 2;
+                    if (info.Name.Replace(".exe", "").Replace(" ", "").ToLower().Equals(info.Directory.Name)) rank += 3;
+                    f.exeRank = rank;
+                }*/
+
+                
+
+
+                var gameExe = GameFiles.Where(x => new FileInfo(x.Location).Extension == ".exe")
+                    .Where(x => new FileInfo(x.Location).Directory.FullName == this.Location)
+                    .MaxBy(x => new FileInfo(x.Location).Length).Take(1);
+
+                if (gameExe != null && gameExe.Count() > 0)
+                    this.ExecutableLocation = gameExe.First().Location;
 
                 //this.Name = gameExe.First<GameFile>().FileInfo.Name.Replace(".exe", "");
 
@@ -151,11 +173,11 @@ namespace GameDiskManager.Types
             else
             {
                 Console.WriteLine("Directory doesn't exist");
-                throw (new Exception());
+                //throw (new Exception());
             }
         }
 
-        public void Migrate (string dest)
+        public virtual void Migrate (string dest)
         {
             this.Scan();
 
@@ -163,6 +185,8 @@ namespace GameDiskManager.Types
 
             if (!Directory.Exists(dest))
                 Directory.CreateDirectory(dest);
+
+
 
             foreach (string s in Folders)
             {

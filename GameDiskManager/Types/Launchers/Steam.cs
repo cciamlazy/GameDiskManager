@@ -1,4 +1,5 @@
-﻿using GameDiskManager.Types.Games;
+﻿using GameDiskManager.Forms;
+using GameDiskManager.Types.Games;
 using Gameloop.Vdf;
 using Gameloop.Vdf.Linq;
 using System;
@@ -13,17 +14,43 @@ namespace GameDiskManager.Types.Launchers
     public class Steam : Launcher
     {
         public string[] SteamGameDirectories { get; set; }
+        ScanProgress _progress;
 
-        public override void ScanGames()
+        public async override Task<bool> ScanGames()
         {
-            base.ScanGames();
+            await base.ScanGames();
+
+            _progress = new ScanProgress();
+            _progress.Show();
 
             SteamGameDirectories = GetSteamDirectories();
 
+            _progress.ProgressMax(CalculateGameCount());
+
+            await Task.Run(() =>
+            {
+                foreach (string s in SteamGameDirectories)
+                {
+                    GetSteamGames(s);
+                }
+            });
+            _progress.UpdateProgress("Scan complete", _progress.GetProgress() + 1);
+            _progress.Close();
+            return true;
+        }
+
+        private int CalculateGameCount()
+        {
+            int count = 0;
             foreach (string s in SteamGameDirectories)
             {
-                GetSteamGames(s);
+                string steamapps = s + "\\steamapps\\";
+                if (Directory.Exists(steamapps))
+                {
+                    count += Directory.GetFiles(steamapps, "*.acf").Count();
+                }
             }
+            return count;
         }
 
         private string[] GetSteamDirectories()
@@ -47,9 +74,6 @@ namespace GameDiskManager.Types.Launchers
                     else
                         flag = true;
                 }
-
-                foreach (string s in dirs)
-                    Console.WriteLine(s);
             }
 
             return dirs.ToArray();
@@ -72,12 +96,19 @@ namespace GameDiskManager.Types.Launchers
 
                     if (Data.Store.Games.Find(x => /*x.GetType() == typeof(SteamGame) &&*/ x.Name.Replace(" ","").ToLower() == gameManifest.Value["name"].ToString().Replace(" ", "").ToLower()) == null)
                     {
+                        _progress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), _progress.GetProgress() + 1);
                         SteamGame game = new SteamGame(gameDir);
 
                         game.appid = gameManifest.Value["appid"].ToString();
                         game.Name = gameManifest.Value["name"].ToString();
 
                         Data.Store.Games.Add(game);
+
+                        _progress.UpdateProgress("Added " + game.Name, _progress.GetProgress() + 1);
+                    }
+                    else
+                    {
+                        _progress.UpdateProgress("Tracked game. Skipping", _progress.GetProgress() + 2);
                     }
                 }
                 Data.SaveDataStore();

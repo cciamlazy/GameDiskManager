@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -40,6 +41,7 @@ namespace GameDiskManager.Forms
             for (int i = 0; i < Data.Store.Launchers.Count; i++)
             {
                 Launcher l = Data.Store.Launchers[i];
+
                 // 
                 // scanMenuItem
                 // 
@@ -57,7 +59,12 @@ namespace GameDiskManager.Forms
                 launcherMenuItems[i].DropDownItems.AddRange(new ToolStripItem[] { launcherMenuSubItems[i, 0] });
                 launcherMenuItems[i].Name = l.Name + "MenuItem";
                 launcherMenuItems[i].Size = new System.Drawing.Size(180, 22);
-                launcherMenuItems[i].Text = l.Name; 
+                launcherMenuItems[i].Text = l.Name;
+                if (File.Exists(l.ExecutableLocation))
+                {
+                    Icon icon = Icon.ExtractAssociatedIcon(l.ExecutableLocation);
+                    launcherMenuItems[i].Image = icon.ToBitmap();
+                }
             }
             this.toolStripLaunchers.DropDownItems.AddRange(launcherMenuItems);
         }
@@ -65,6 +72,8 @@ namespace GameDiskManager.Forms
         private void ReloadListView()
         {
             gameList.Items.Clear();
+            gameImages.Images.Clear();
+            gameList.SmallImageList = gameImages;
 
             for (int i = 0; i < Data.Store.Drives.Count; i++)
             {
@@ -80,10 +89,23 @@ namespace GameDiskManager.Forms
             }
             foreach (Game g in Data.Store.Games)
             {
-                string[] arr = { g.Name, g.EZSize, Math.Round((g.PercentDiskSpace * 100), 2).ToString() + "%", g.Priority.ToString(), g.Active.ToString() };
+                int imageIndex = -1;
+                if (g.ExecutableLocation != null && File.Exists(g.ExecutableLocation))
+                {
+                    Icon icon = Icon.ExtractAssociatedIcon(g.ExecutableLocation);
+                    if (icon != null)
+                    {
+                        gameImages.Images.Add(icon);
+                        imageIndex = gameImages.Images.Count - 1;
+                    }
+
+                }
+                string[] arr = { "", g.Name, g.EZSize, Math.Round((g.PercentDiskSpace * 100), 2).ToString() + "%", g.Priority.ToString(), g.Active.ToString() };
                 ListViewItem gi = new ListViewItem(arr);
                 gi.Tag = g.GameID;
                 gi.Group = Array.Find(groups, x => (int)x.Tag == g.DriveID);
+                gi.ImageIndex = imageIndex;
+
                 gameList.Items.Add(gi);
             }
             gameList.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
@@ -171,12 +193,13 @@ namespace GameDiskManager.Forms
 
         }
 
-        private void launcherScanMenu_Click(object sender, EventArgs e)
+        private async void launcherScanMenu_Click(object sender, EventArgs e)
         {
             if (sender == null || ((ToolStripMenuItem)sender).Tag == null)
                 return;
-            Data.Store.Launchers[Data.Store.Launchers.FindIndex(x => x.LauncherID == (int)((ToolStripMenuItem)sender).Tag)].ScanGames();
 
+            await Data.Store.Launchers[Data.Store.Launchers.FindIndex(x => x.LauncherID == (int)((ToolStripMenuItem)sender).Tag)].ScanGames();
+            
             ReloadListView();
         }
         #endregion
@@ -251,7 +274,7 @@ namespace GameDiskManager.Forms
                         if (d.AvailableFreeSpace + d.KeepSpaceAvailable < g.Size)
                         {
                             enabled = false;
-                            gameMenuOptions.Items[i].Text = gameMenuOptions.Items[i].Text + " (Not enough space)";
+                            gameMenuOptions.Items[i].Text = gameMenuOptions.Items[i].Text.Replace(" (Not enough space)", "") + " (Not enough space)";
                         }
                         else
                         {

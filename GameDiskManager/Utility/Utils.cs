@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,36 @@ namespace GameDiskManager.Utility
             int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
             double num = Math.Round(bytes / Math.Pow(1024, place), decimalPlaces);
             return (Math.Sign(byteCount) * num).ToString() + " " + suf[place];
+        }
+
+        // Scale an image without disorting it.
+        // Return a centered rectangle in the destination area.
+        public static RectangleF ScaleRect(
+            RectangleF source_rect, RectangleF dest_rect)
+        {
+            float source_aspect =
+                source_rect.Width / source_rect.Height;
+            float wid = dest_rect.Width;
+            float hgt = dest_rect.Height;
+            float dest_aspect = wid / hgt;
+
+            if (source_aspect > dest_aspect)
+            {
+                // The source is relatively short and wide.
+                // Use all of the available width.
+                hgt = wid / source_aspect;
+            }
+            else
+            {
+                // The source is relatively tall and thin.
+                // Use all of the available height.
+                wid = hgt * source_aspect;
+            }
+
+            // Center it.
+            float x = dest_rect.Left + (dest_rect.Width - wid) / 2;
+            float y = dest_rect.Top + (dest_rect.Height - hgt) / 2;
+            return new RectangleF(x, y, wid, hgt);
         }
     }
 }
