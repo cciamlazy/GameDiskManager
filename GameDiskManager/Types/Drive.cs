@@ -45,6 +45,16 @@ namespace GameDiskManager.Types
             await Task.Delay(5000);
         }
 
+        public static int GetDriveID(string dir)
+        {
+            return GetDriveID(new DirectoryInfo(dir));
+        }
+
+        public static int GetDriveID(DirectoryInfo dir)
+        {
+            return Data.Store.Drives.Find(x => dir.FullName.Contains(x.Name)).DriveID;
+        }
+
         public override bool Equals(object obj) => Equals(obj as Drive);
         public override int GetHashCode() => (DriveID, Name).GetHashCode();
     }

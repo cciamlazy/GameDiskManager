@@ -99,7 +99,7 @@ namespace GameDiskManager.Types.Launchers
                         _progress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), _progress.GetProgress() + 1);
                         SteamGame game = new SteamGame(gameDir);
 
-                        game.appid = gameManifest.Value["appid"].ToString();
+                        game.AppID = gameManifest.Value["appid"].ToString();
                         game.Name = gameManifest.Value["name"].ToString();
 
                         Data.Store.Games.Add(game);

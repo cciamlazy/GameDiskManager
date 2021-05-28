@@ -93,18 +93,22 @@ namespace GameDiskManager.Types
         }
 
         [JsonConstructor]
-        public Game(int launcherId, int gameId, int driveId, string name, string location)
+        public Game(int launcherId, int gameId, int driveId, string name, string location, int priority, DateTime lastplayed, int playtime, bool active, List<ConfigFile> configfiles)
         {
             LauncherID = launcherId;
             GameID = gameId;
             DriveID = driveId;
             Name = name;
             Location = location;
+            Priority = priority;
+            LastPlayed = lastplayed;
+            PlayTime = playtime;
+            Active = active;
+            ConfigFiles = configfiles;
         }
 
         public void Scan ()
         {
-            Console.WriteLine("Scanning");
             if (Directory.Exists(Location))
             {
                 Folders = Utility.DepthSearch.GetDirectories(Location).ToArray();
@@ -169,6 +173,8 @@ namespace GameDiskManager.Types
                     Drive d = Data.Store.Drives.Find(x => x.DriveID == this.DriveID);
                     this.PercentDiskSpace = (double)this.Size / (double)d.TotalSize;
                 }
+
+                Data.UpdateGame(this);
             }
             else
             {
@@ -177,23 +183,24 @@ namespace GameDiskManager.Types
             }
         }
 
-        public virtual void Migrate (string dest)
+        public async virtual void Migrate (string dest, DateTime plannedDT)
         {
             this.Scan();
 
-            Console.WriteLine("Migrating game: " + this.Name);
-
-            if (!Directory.Exists(dest))
-                Directory.CreateDirectory(dest);
-
-
-
-            foreach (string s in Folders)
+            GameMigration migration = new GameMigration
             {
-                string path = dest + s;
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-            }
+                MigrationID = Data.MigrationIndex++,
+                GameID = this.GameID,
+                From_DriveID = this.DriveID,
+                To_DriveID = Drive.GetDriveID(dest),
+                Status = MigrationStatus.Pending,
+                PlannedDateTime = plannedDT,
+                DestinationRoot = dest
+            };
+
+            Console.WriteLine("Migrating game: {0} from {1} to {2}", this.Name, this.Location, dest);
+
+            migration.MigrationFiles = new MigrationFile[GameFiles.Length];
 
             for (int i = 0; i < GameFiles.Length; i++)
             {
@@ -204,10 +211,12 @@ namespace GameDiskManager.Types
                     size = GameFiles[i].Size,
                     Status = MigrationStatus.Pending
                 };
-                FastMove.MoveGameItem(ref item);
 
-                //GameFiles[i].MovingItem = item;
+                migration.MigrationFiles[i] = item;
             }
+
+            await migration.MigrateGame();
+
             /*
             Serializer<GameFile[]>
                 .WriteToJSONFile(GameFiles

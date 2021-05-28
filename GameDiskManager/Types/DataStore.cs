@@ -28,6 +28,69 @@ namespace GameDiskManager
         public static DataStore Store { get; set; }
         public static string SavePath { get; private set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "GameDiskManager\\");
+
+        #region Control Variables
+        public static int DriveIndex
+        {
+            get { return Store.DriveIndex; }
+            set
+            {
+                if (value == Store.DriveIndex + 1)
+                    Store.DriveIndex++;
+            }
+        }
+
+        public static int LauncherIndex
+        {
+            get { return Store.LauncherIndex; }
+            set
+            {
+                if (value == Store.LauncherIndex + 1)
+                    Store.LauncherIndex++;
+            }
+        }
+
+        public static int GameIndex
+        {
+            get { return Store.GameIndex; }
+            set
+            {
+                if (value == Store.GameIndex + 1)
+                    Store.GameIndex++;
+            }
+        }
+
+        public static int MigrationIndex
+        {
+            get { return Store.MigrationIndex; }
+            set
+            {
+                if (value == Store.MigrationIndex + 1)
+                    Store.MigrationIndex++;
+            }
+        }
+
+        public static Drive DriveByID(int DriveID)
+        {
+            return Store.Drives.Find(d => d.DriveID == DriveID);
+        }
+
+        public static Game GameByID(int GameID)
+        {
+            return Store.Games.Find(d => d.GameID == GameID);
+        }
+
+        public static Launcher LauncherByID(int LauncherID)
+        {
+            return Store.Launchers.Find(d => d.LauncherID == LauncherID);
+        }
+
+        public static GameMigration MigrationByID(int MigrationID)
+        {
+            return Store.Migrations.Find(d => d.MigrationID == MigrationID);
+        }
+
+        #endregion
         public static void InitializeDataStore()
         {
             if (File.Exists(SavePath + "DataStore.json"))
@@ -99,7 +162,7 @@ namespace GameDiskManager
                 {
                     Store.Launchers.Add(new Steam
                     {
-                        LauncherID = Store.LauncherIndex++,
+                        LauncherID = LauncherIndex++,
                         LauncherType = LauncherType.Steam,
                         Name = "Steam",
                         Location = steamDir.FullName,

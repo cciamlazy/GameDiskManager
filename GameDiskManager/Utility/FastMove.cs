@@ -30,7 +30,7 @@ namespace GameDiskManager.Utility
         public static void MigrateGame(Game game, string dest)
         {
             DateTime start_time = DateTime.Now;
-            game.Migrate(dest);
+            game.Migrate(dest, DateTime.Now);
             long size = DepthSearch.DirectorySize(dest);
             int milliseconds = 1 + (int)((DateTime.Now - start_time).TotalMilliseconds);
             // size time in milliseconds per hour
@@ -39,9 +39,10 @@ namespace GameDiskManager.Utility
             Console.WriteLine(tsize + "GB/hour");
         }
 
-        public static void MoveGameItem (ref MigrationFile file)
+        public static void MoveGameFile (ref MigrationFile file)
         {
             file.Status = MigrationStatus.Migrating;
+            DateTime start_time = DateTime.Now;
             try
             {
                 FMove(file.source, file.destination, true);
@@ -51,6 +52,10 @@ namespace GameDiskManager.Utility
             {
                 file.Status = MigrationStatus.Failed;
                 Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                file.Time_ms = 1 + (int)((DateTime.Now - start_time).TotalMilliseconds);
             }
         }
 
