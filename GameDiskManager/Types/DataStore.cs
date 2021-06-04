@@ -99,7 +99,7 @@ namespace GameDiskManager
                 /*foreach (Game g in Store.Games)
                     g.Scan();*/
             }
-            else
+            if (Store == null)
             {
                 Store = new DataStore
                 {
@@ -121,30 +121,35 @@ namespace GameDiskManager
 
             foreach (DriveInfo d in allDrives)
             {
-                Drive drive = new Drive
+                if (d.IsReady)
                 {
-                    Name = d.Name,
-                    VolumeLabel = d.VolumeLabel,
-                    DriveType = d.DriveType,
-                    TotalSize = d.TotalSize,
-                    TotalFreeSpace = d.TotalFreeSpace,
-                    AvailableFreeSpace = d.AvailableFreeSpace,
-                    IsReady = d.IsReady,
-                    Active = true,
-                    Priority = 3,
-                };
-                int found = Store.Drives.FindIndex(x => x.Name == drive.Name && x.TotalSize == drive.TotalSize && x.DriveType == drive.DriveType);
-                if (found >= 0) // Drive exists
-                {
-                    Store.Drives[found].VolumeLabel = drive.VolumeLabel;
-                    Store.Drives[found].TotalFreeSpace = drive.TotalFreeSpace;
-                    Store.Drives[found].AvailableFreeSpace = drive.AvailableFreeSpace;
-                    Store.Drives[found].IsReady = drive.IsReady;
-                }
-                else
-                {
-                    drive.DriveID = Store.DriveIndex++;
-                    Store.Drives.Add(drive);
+                    Drive drive = new Drive
+                    {
+                        Name = d.Name,
+                        VolumeLabel = d.VolumeLabel,
+                        DriveType = d.DriveType,
+                        TotalSize = d.TotalSize,
+                        TotalFreeSpace = d.TotalFreeSpace,
+                        AvailableFreeSpace = d.AvailableFreeSpace,
+                        IsReady = d.IsReady,
+                        Active = true,
+                        Priority = 3,
+                    };
+                    int found = -1;
+                    if (Store.Drives != null)
+                        found = Store.Drives.FindIndex(x => x.Name == drive.Name && x.TotalSize == drive.TotalSize && x.DriveType == drive.DriveType);
+                    if (found >= 0) // Drive exists
+                    {
+                        Store.Drives[found].VolumeLabel = drive.VolumeLabel;
+                        Store.Drives[found].TotalFreeSpace = drive.TotalFreeSpace;
+                        Store.Drives[found].AvailableFreeSpace = drive.AvailableFreeSpace;
+                        Store.Drives[found].IsReady = drive.IsReady;
+                    }
+                    else
+                    {
+                        drive.DriveID = Store.DriveIndex++;
+                        Store.Drives.Add(drive);
+                    }
                 }
             }
         }
@@ -196,15 +201,23 @@ namespace GameDiskManager
 
         public static void UpdateGame(Game game)
         {
-            int gameIndex = Store.Games.FindIndex(x => x.GameID == game.GameID);
-            Store.Games[gameIndex].Name = game.Name;
-            Store.Games[gameIndex].LauncherID = game.LauncherID;
-            Store.Games[gameIndex].Location = game.Location;
-            Store.Games[gameIndex].Folders = game.Folders;
-            Store.Games[gameIndex].GameFiles = game.GameFiles;
-            Store.Games[gameIndex].Priority = game.Priority;
-            Store.Games[gameIndex].Active = game.Active;
-            Store.Games[gameIndex].ConfigFiles = game.ConfigFiles;
+            int gameIndex = Store.Games.FindIndex(x => x.GameID == game.GameID || x.Location == game.Location);
+            if (gameIndex == -1)
+            {
+                Store.Games.Add(game);
+            }
+            else
+            {
+                Store.Games[gameIndex] = game;
+                /*Store.Games[gameIndex].Name = game.Name;
+                Store.Games[gameIndex].LauncherID = game.LauncherID;
+                Store.Games[gameIndex].Location = game.Location;
+                Store.Games[gameIndex].Folders = game.Folders;
+                Store.Games[gameIndex].GameFiles = game.GameFiles;
+                Store.Games[gameIndex].Priority = game.Priority;
+                Store.Games[gameIndex].Active = game.Active;
+                Store.Games[gameIndex].ConfigFiles = game.ConfigFiles;*/
+            }
             SaveDataStore();
         }
 

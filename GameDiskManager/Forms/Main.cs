@@ -89,7 +89,7 @@ namespace GameDiskManager.Forms
             }
             foreach (Game g in Data.Store.Games)
             {
-                int imageIndex = -1;
+                /*int imageIndex = -1;
                 if (g.ExecutableLocation != null && File.Exists(g.ExecutableLocation))
                 {
                     Icon icon = Icon.ExtractAssociatedIcon(g.ExecutableLocation);
@@ -99,12 +99,13 @@ namespace GameDiskManager.Forms
                         imageIndex = gameImages.Images.Count - 1;
                     }
 
-                }
+                }*/
+
                 string[] arr = { "", g.Name, g.EZSize, Math.Round((g.PercentDiskSpace * 100), 2).ToString() + "%", g.Priority.ToString(), g.Active.ToString() };
                 ListViewItem gi = new ListViewItem(arr);
                 gi.Tag = g.GameID;
                 gi.Group = Array.Find(groups, x => (int)x.Tag == g.DriveID);
-                gi.ImageIndex = imageIndex;
+                //gi.ImageIndex = imageIndex;
 
                 gameList.Items.Add(gi);
             }
@@ -240,13 +241,22 @@ namespace GameDiskManager.Forms
             gameMenuOptions.Items.AddRange(toolStripItems);
         }
 
-        private void MoveToDriveItem_Click(object sender, EventArgs e)
+        private async void MoveToDriveItem_Click(object sender, EventArgs e)
         {
             if (SelectedGameItem == null || SelectedGameItem.Tag == null)
                 return;
 
             ToolStripMenuItem pressed = (ToolStripMenuItem)sender;
-            Drive d = Data.Store.Drives.Find(x => x.DriveID == (int)pressed.Tag);
+            int toDriveId = (int)pressed.Tag;
+            int gameId = (int)SelectedGameItem.Tag;
+
+            //Drive d = Data.DriveByID(toDriveId);
+
+            Game g = Data.GameByID(gameId);
+
+            await g.Migrate(toDriveId);
+
+            ReloadListView();
         }
 
         /// <summary>

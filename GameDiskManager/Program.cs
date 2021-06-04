@@ -15,6 +15,7 @@ namespace GameDiskManager
         [STAThread]
         static void Main()
         {
+
             Data.InitializeDataStore();
 
             Application.EnableVisualStyles();

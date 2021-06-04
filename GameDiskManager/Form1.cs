@@ -54,7 +54,7 @@ namespace GameDiskManager
         {
             Game game = new Game(source.Text);
 
-            FastMove.MigrateGame(game, dest.Text);
+            //FastMove.MigrateGame(game, dest.Text);
 
             
         }

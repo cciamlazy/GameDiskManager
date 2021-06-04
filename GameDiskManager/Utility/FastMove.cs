@@ -27,7 +27,7 @@ namespace GameDiskManager.Utility
         /// </summary>
         /// <param name="game"></param>
         /// <param name="dest"></param>
-        public static void MigrateGame(Game game, string dest)
+        /*public static void MigrateGame(Game game, string dest)
         {
             DateTime start_time = DateTime.Now;
             game.Migrate(dest, DateTime.Now);
@@ -37,7 +37,7 @@ namespace GameDiskManager.Utility
             long tsize = size * 3600000 / milliseconds;
             tsize = tsize / (int)Math.Pow(2, 30);
             Console.WriteLine(tsize + "GB/hour");
-        }
+        }*/
 
         public static void MoveGameFile (ref MigrationFile file)
         {
@@ -63,7 +63,7 @@ namespace GameDiskManager.Utility
         /// </summary>
         /// <param name="source">Source file path</param> 
         /// <param name="destination">Destination file path</param> 
-        private static void FMove(string source, string destination, bool skipValidation = true)
+        public static void FMove(string source, string destination, bool skipValidation = true)
         {
             int array_length = (int)Math.Pow(2, 19);
             byte[] dataArray = new byte[array_length];

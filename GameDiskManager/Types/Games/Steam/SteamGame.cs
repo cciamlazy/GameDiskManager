@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using GameDiskManager.Utility;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,11 +26,25 @@ namespace GameDiskManager.Types.Games
             Manifest = manifest;
         }
 
-        public override void Migrate(string dest, DateTime plannedDT)
+        public async override Task<GameMigration> Migrate(string dest, DateTime plannedDT)
         {
-            base.Migrate(dest, plannedDT);
+            GameMigration gm = await base.Migrate(dest, plannedDT);
 
+            Launcher steam = Data.LauncherByID(this.LauncherID);
 
+            string oldDir = steam.GameDirectories.Where(x => x.Contains(Data.DriveByID(gm.From_DriveID).Name)).First();
+
+            string newDir = steam.GameDirectories.Where(x => x.Contains(Data.DriveByID(gm.To_DriveID).Name)).First();
+
+            string newDest = Manifest.Replace(oldDir, newDir);
+
+            Console.WriteLine("Moving {0} to {1}", Manifest, newDest);
+            FastMove.FMove(Manifest, newDest);
+            Manifest = newDest;
+
+            Data.SaveDataStore();
+
+            return gm;
         }
     }
 }

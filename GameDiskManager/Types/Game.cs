@@ -183,7 +183,12 @@ namespace GameDiskManager.Types
             }
         }
 
-        public async virtual void Migrate (string dest, DateTime plannedDT)
+        public async virtual Task<GameMigration> Migrate (int toDriveId)
+        {
+            return await this.Migrate(this.Location.Replace(Data.DriveByID(this.DriveID).Name, Data.DriveByID(toDriveId).Name), DateTime.Now);
+        }
+
+        public async virtual Task<GameMigration> Migrate (string dest, DateTime plannedDT)
         {
             this.Scan();
 
@@ -225,6 +230,8 @@ namespace GameDiskManager.Types
             */
             Location = dest;
             Scan();
+
+            return migration;
         }
 
         public bool Equals(Game other)

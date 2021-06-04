@@ -1,5 +1,6 @@
 ﻿using GameDiskManager.Forms;
 using GameDiskManager.Types.Games;
+using GameDiskManager.Utility;
 using Gameloop.Vdf;
 using Gameloop.Vdf.Linq;
 using System;
@@ -13,7 +14,6 @@ namespace GameDiskManager.Types.Launchers
 {
     public class Steam : Launcher
     {
-        public string[] SteamGameDirectories { get; set; }
         ScanProgress _progress;
 
         public async override Task<bool> ScanGames()
@@ -23,13 +23,13 @@ namespace GameDiskManager.Types.Launchers
             _progress = new ScanProgress();
             _progress.Show();
 
-            SteamGameDirectories = GetSteamDirectories();
+            GameDirectories = GetSteamDirectories();
 
             _progress.ProgressMax(CalculateGameCount());
 
             await Task.Run(() =>
             {
-                foreach (string s in SteamGameDirectories)
+                foreach (string s in GameDirectories)
                 {
                     GetSteamGames(s);
                 }
@@ -42,7 +42,7 @@ namespace GameDiskManager.Types.Launchers
         private int CalculateGameCount()
         {
             int count = 0;
-            foreach (string s in SteamGameDirectories)
+            foreach (string s in GameDirectories)
             {
                 string steamapps = s + "\\steamapps\\";
                 if (Directory.Exists(steamapps))
@@ -101,8 +101,13 @@ namespace GameDiskManager.Types.Launchers
 
                         game.AppID = gameManifest.Value["appid"].ToString();
                         game.Name = gameManifest.Value["name"].ToString();
+                        game.Manifest = f;
 
-                        Data.Store.Games.Add(game);
+                        //Console.WriteLine("acf relative path: " + Utils.GetRelativePath(game.Location, f));
+
+                        //Console.WriteLine("Relative Full Path: " + Path.Combine(Path.GetDirectoryName(game.Location), Utils.GetRelativePath(game.Location, f)));
+
+                        //Data.Store.Games.Add(game);
 
                         _progress.UpdateProgress("Added " + game.Name, _progress.GetProgress() + 1);
                     }

@@ -19,6 +19,7 @@ namespace GameDiskManager.Types
         public string Location { get; set; }
         public string ExecutableLocation { get; set; }
         public LauncherType LauncherType { get; set; }
+        public string[] GameDirectories { get; set; }
 
         public async virtual Task<bool> ScanGames()
         {
