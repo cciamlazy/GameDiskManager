@@ -37,13 +37,13 @@ namespace GameDiskManager.Forms
             // 
             this.progressBar.Location = new System.Drawing.Point(13, 12);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(182, 44);
+            this.progressBar.Size = new System.Drawing.Size(423, 29);
             this.progressBar.TabIndex = 0;
             // 
             // status
             // 
             this.status.AutoSize = true;
-            this.status.Location = new System.Drawing.Point(13, 59);
+            this.status.Location = new System.Drawing.Point(12, 44);
             this.status.Name = "status";
             this.status.Size = new System.Drawing.Size(35, 13);
             this.status.TabIndex = 1;
@@ -54,11 +54,12 @@ namespace GameDiskManager.Forms
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(208, 77);
+            this.ClientSize = new System.Drawing.Size(448, 68);
             this.Controls.Add(this.status);
             this.Controls.Add(this.progressBar);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "ScanProgress";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ScanProgress";
             this.ResumeLayout(false);
             this.PerformLayout();
