@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameDiskManager.Types;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,19 +13,16 @@ namespace GameDiskManager.Forms
 {
     public partial class MigrationProgress : Form
     {
-        public MigrationProgress()
+        GameMigration gameMigration;
+        public MigrationProgress(GameMigration migration)
         {
             InitializeComponent();
+            gameMigration = migration;
         }
 
         private void MigrationProgress_Load(object sender, EventArgs e)
         {
-
-        }
-
-        private void label9_Click(object sender, EventArgs e)
-        {
-
+            
         }
     }
 }
