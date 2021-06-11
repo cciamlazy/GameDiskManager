@@ -25,6 +25,8 @@ namespace GameDiskManager.Types
         [JsonIgnore]
         public MigrationFile[] MigrationFiles { get; set; }
         public MigrationFile[] Failed { get; set; }
+        public long TotalSize { get; set; }
+        public long Moved { get; set; }
 
         public bool Equals(GameMigration other)
         {
@@ -47,6 +49,8 @@ namespace GameDiskManager.Types
             }
 
             Game game = Data.GameByID(this.GameID);
+
+            TotalSize = game.Size;
 
             SourceRoot = game.Location;
 
@@ -146,7 +150,9 @@ namespace GameDiskManager.Types
         public string source { get; set; }
         public string destination { get; set; }
         public long size { get; set; }
+        public long sent { get; set; }
         public int Time_ms { get; set; }
         public MigrationStatus Status { get; set; }
+        public Exception Exception { get; set; }
     }
 }

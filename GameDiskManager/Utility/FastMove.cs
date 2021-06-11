@@ -45,13 +45,14 @@ namespace GameDiskManager.Utility
             DateTime start_time = DateTime.Now;
             try
             {
-                FMove(file.source, file.destination, true);
+                FMove(ref file, true);
                 file.Status = MigrationStatus.Successful;
+                file.sent = file.size;
             }
             catch(Exception e)
             {
                 file.Status = MigrationStatus.Failed;
-                Console.WriteLine(e.Message);
+                file.Exception = e;
             }
             finally
             {
@@ -63,17 +64,17 @@ namespace GameDiskManager.Utility
         /// </summary>
         /// <param name="source">Source file path</param> 
         /// <param name="destination">Destination file path</param> 
-        public static void FMove(string source, string destination, bool skipValidation = true)
+        public static void FMove(ref MigrationFile file, bool skipValidation = true)
         {
             int array_length = (int)Math.Pow(2, 19);
             byte[] dataArray = new byte[array_length];
             using (FileStream fsread = new FileStream
-            (source, FileMode.Open, FileAccess.Read, FileShare.None, array_length))
+            (file.source, FileMode.Open, FileAccess.Read, FileShare.None, array_length))
             {
                 using (BinaryReader bwread = new BinaryReader(fsread))
                 {
                     using (FileStream fswrite = new FileStream
-                    (destination, FileMode.Create, FileAccess.Write, FileShare.None, array_length))
+                    (file.destination, FileMode.Create, FileAccess.Write, FileShare.None, array_length))
                     {
                         using (BinaryWriter bwwrite = new BinaryWriter(fswrite))
                         {
@@ -83,16 +84,17 @@ namespace GameDiskManager.Utility
                                 if (0 == read)
                                     break;
                                 bwwrite.Write(dataArray, 0, read);
+                                file.sent += read;
                             }
                         }
                     }
                 }
             }
-            CopyPropertiesTo(source, destination);
+            CopyPropertiesTo(file.source, file.destination);
             if (!skipValidation)
-                ValidateTransfer(source, destination);
+                ValidateTransfer(file.source, file.destination);
 
-            File.Delete(source);
+            File.Delete(file.source);
         }
 
         private static bool ValidateTransfer(string source, string dest)

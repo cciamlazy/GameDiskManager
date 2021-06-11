@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using LiteDB;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using GameDiskManager.Forms;
 
 namespace GameDiskManager.Types
 {
@@ -200,7 +201,8 @@ namespace GameDiskManager.Types
                 To_DriveID = Drive.GetDriveID(dest),
                 Status = MigrationStatus.Pending,
                 PlannedDateTime = plannedDT,
-                DestinationRoot = dest
+                DestinationRoot = dest,
+                TotalSize = this.Size
             };
 
             Console.WriteLine("Migrating game: {0} from {1} to {2}", this.Name, this.Location, dest);
@@ -220,7 +222,13 @@ namespace GameDiskManager.Types
                 migration.MigrationFiles[i] = item;
             }
 
-            await migration.MigrateGame();
+            using (MigrationProgress mp = new MigrationProgress(migration))
+            {
+                mp.Show();
+                mp.StartMigration();
+            }
+
+            //await migration.MigrateGame();
 
             /*
             Serializer<GameFile[]>

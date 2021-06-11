@@ -38,6 +38,11 @@ namespace GameDiskManager.Utility
             return (Math.Sign(byteCount) * num).ToString() + " " + suf[place];
         }
 
+        public static string TransferSpeed(long amount, int seconds)
+        {
+            return string.Format("{0}/s", BytesToString(amount/seconds));
+        }
+
         // Scale an image without disorting it.
         // Return a centered rectangle in the destination area.
         public static RectangleF ScaleRect(

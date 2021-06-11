@@ -29,9 +29,10 @@ namespace GameDiskManager.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
             this.elapsedTime = new System.Windows.Forms.Label();
-            this.remainingTime = new System.Windows.Forms.Label();
+            this.estimatedTime = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.errors = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -50,6 +51,7 @@ namespace GameDiskManager.Forms
             this.cancelButton = new System.Windows.Forms.Button();
             this.pauseButton = new System.Windows.Forms.Button();
             this.backgroundButton = new System.Windows.Forms.Button();
+            this.updateTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // label1
@@ -63,42 +65,42 @@ namespace GameDiskManager.Forms
             // 
             // elapsedTime
             // 
-            this.elapsedTime.AutoSize = true;
-            this.elapsedTime.Location = new System.Drawing.Point(204, 17);
+            this.elapsedTime.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.elapsedTime.Location = new System.Drawing.Point(208, 17);
             this.elapsedTime.Name = "elapsedTime";
             this.elapsedTime.Size = new System.Drawing.Size(56, 17);
             this.elapsedTime.TabIndex = 1;
             this.elapsedTime.Text = "00:00:00";
-            this.elapsedTime.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.elapsedTime.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // remainingTime
+            // estimatedTime
             // 
-            this.remainingTime.AutoSize = true;
-            this.remainingTime.Location = new System.Drawing.Point(204, 44);
-            this.remainingTime.Name = "remainingTime";
-            this.remainingTime.Size = new System.Drawing.Size(56, 17);
-            this.remainingTime.TabIndex = 3;
-            this.remainingTime.Text = "00:00:00";
-            this.remainingTime.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.estimatedTime.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.estimatedTime.Location = new System.Drawing.Point(208, 44);
+            this.estimatedTime.Name = "estimatedTime";
+            this.estimatedTime.Size = new System.Drawing.Size(56, 17);
+            this.estimatedTime.TabIndex = 3;
+            this.estimatedTime.Text = "00:00:00";
+            this.estimatedTime.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(15, 44);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(101, 17);
+            this.label3.Size = new System.Drawing.Size(97, 17);
             this.label3.TabIndex = 2;
-            this.label3.Text = "Remaining time:";
+            this.label3.Text = "Estimated time:";
             // 
             // errors
             // 
-            this.errors.AutoSize = true;
-            this.errors.Location = new System.Drawing.Point(245, 98);
+            this.errors.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.errors.Location = new System.Drawing.Point(249, 98);
             this.errors.Name = "errors";
             this.errors.Size = new System.Drawing.Size(15, 17);
             this.errors.TabIndex = 7;
             this.errors.Text = "0";
-            this.errors.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.errors.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label5
             // 
@@ -111,14 +113,14 @@ namespace GameDiskManager.Forms
             // 
             // files
             // 
-            this.files.AutoSize = true;
-            this.files.Location = new System.Drawing.Point(233, 71);
+            this.files.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.files.Location = new System.Drawing.Point(237, 71);
             this.files.Name = "files";
             this.files.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.files.Size = new System.Drawing.Size(27, 17);
             this.files.TabIndex = 5;
             this.files.Text = "0/0";
-            this.files.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.files.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label7
             // 
@@ -131,14 +133,14 @@ namespace GameDiskManager.Forms
             // 
             // processedAmt
             // 
-            this.processedAmt.AutoSize = true;
-            this.processedAmt.Location = new System.Drawing.Point(566, 71);
+            this.processedAmt.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.processedAmt.Location = new System.Drawing.Point(570, 71);
             this.processedAmt.Name = "processedAmt";
             this.processedAmt.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.processedAmt.Size = new System.Drawing.Size(27, 17);
             this.processedAmt.TabIndex = 13;
             this.processedAmt.Text = "0 K";
-            this.processedAmt.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.processedAmt.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label4
             // 
@@ -151,13 +153,13 @@ namespace GameDiskManager.Forms
             // 
             // speed
             // 
-            this.speed.AutoSize = true;
-            this.speed.Location = new System.Drawing.Point(548, 44);
+            this.speed.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.speed.Location = new System.Drawing.Point(552, 44);
             this.speed.Name = "speed";
             this.speed.Size = new System.Drawing.Size(45, 17);
             this.speed.TabIndex = 11;
             this.speed.Text = "0 KB/s";
-            this.speed.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.speed.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label8
             // 
@@ -170,13 +172,13 @@ namespace GameDiskManager.Forms
             // 
             // totalSize
             // 
-            this.totalSize.AutoSize = true;
-            this.totalSize.Location = new System.Drawing.Point(562, 17);
+            this.totalSize.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.totalSize.Location = new System.Drawing.Point(566, 17);
             this.totalSize.Name = "totalSize";
             this.totalSize.Size = new System.Drawing.Size(31, 17);
             this.totalSize.TabIndex = 9;
             this.totalSize.Text = "0 M";
-            this.totalSize.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.totalSize.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label10
             // 
@@ -249,6 +251,11 @@ namespace GameDiskManager.Forms
             this.backgroundButton.Text = "Background";
             this.backgroundButton.UseVisualStyleBackColor = true;
             // 
+            // updateTimer
+            // 
+            this.updateTimer.Enabled = true;
+            this.updateTimer.Tick += new System.EventHandler(this.updateTimer_Tick);
+            // 
             // MigrationProgress
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -272,14 +279,17 @@ namespace GameDiskManager.Forms
             this.Controls.Add(this.label5);
             this.Controls.Add(this.files);
             this.Controls.Add(this.label7);
-            this.Controls.Add(this.remainingTime);
+            this.Controls.Add(this.estimatedTime);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.elapsedTime);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "MigrationProgress";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "MigrationProgress";
             this.Load += new System.EventHandler(this.MigrationProgress_Load);
             this.ResumeLayout(false);
@@ -291,7 +301,7 @@ namespace GameDiskManager.Forms
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label elapsedTime;
-        private System.Windows.Forms.Label remainingTime;
+        private System.Windows.Forms.Label estimatedTime;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label errors;
         private System.Windows.Forms.Label label5;
@@ -310,5 +320,6 @@ namespace GameDiskManager.Forms
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.Button pauseButton;
         private System.Windows.Forms.Button backgroundButton;
+        private System.Windows.Forms.Timer updateTimer;
     }
 }
