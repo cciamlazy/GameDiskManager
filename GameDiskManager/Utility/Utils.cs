@@ -40,6 +40,7 @@ namespace GameDiskManager.Utility
 
         public static string TransferSpeed(long amount, int seconds)
         {
+            if (seconds == 0) return "0 B/s";
             return string.Format("{0}/s", BytesToString(amount/seconds));
         }
 

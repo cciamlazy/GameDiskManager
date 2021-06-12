@@ -14,40 +14,6 @@ using GameDiskManager.Forms;
 
 namespace GameDiskManager.Types
 {
-
-    public class GameFile
-    {
-        public string Location { get; set; }
-        public long Size { get; set; }
-        public string EZSize { get; set; }
-        public int exeRank { get; set; }
-
-        public GameFile(string location)
-        {
-            Location = location;
-            if (location != null)
-            {
-                var FileInfo = new FileInfo(location);
-                this.Size = FileInfo.Length;
-                this.EZSize = Utils.BytesToString(this.Size);
-            }
-        }
-
-        [JsonConstructor]
-        public GameFile (string location, long size, string ezSize)
-        {
-            Location = location;
-            this.Size = size;
-            this.EZSize = ezSize;
-        }
-    }
-    
-    public class ConfigFile
-    {
-        public string Location { get; set; }
-        public bool KeepLocation { get; set; }
-
-    }
     public class Game : IEquatable<Game>
     {
         public int LauncherID { get; set; }
@@ -184,12 +150,12 @@ namespace GameDiskManager.Types
             }
         }
 
-        public async virtual Task<GameMigration> Migrate (int toDriveId)
+        public virtual GameMigration Migrate (int toDriveId)
         {
-            return await this.Migrate(this.Location.Replace(Data.DriveByID(this.DriveID).Name, Data.DriveByID(toDriveId).Name), DateTime.Now);
+            return this.Migrate(this.Location.Replace(Data.DriveByID(this.DriveID).Name, Data.DriveByID(toDriveId).Name), DateTime.Now);
         }
 
-        public async virtual Task<GameMigration> Migrate (string dest, DateTime plannedDT)
+        public virtual GameMigration Migrate (string dest, DateTime plannedDT)
         {
             this.Scan();
 
@@ -224,8 +190,8 @@ namespace GameDiskManager.Types
 
             using (MigrationProgress mp = new MigrationProgress(migration))
             {
-                mp.Show();
-                mp.StartMigration();
+                mp.ShowDialog();
+                //mp.StartMigration();
             }
 
             //await migration.MigrateGame();
@@ -252,5 +218,49 @@ namespace GameDiskManager.Types
 
         public override bool Equals(object obj) => Equals(obj as Game);
         public override int GetHashCode() => (GameID, Location).GetHashCode();
+    }
+
+    public class GameFile
+    {
+        public string Location { get; set; }
+        public long Size { get; set; }
+        public string EZSize { get; set; }
+        public int exeRank { get; set; }
+
+        public GameFile(string location)
+        {
+            Location = location;
+            if (location != null)
+            {
+                var FileInfo = new FileInfo(location);
+                this.Size = FileInfo.Length;
+                this.EZSize = Utils.BytesToString(this.Size);
+            }
+        }
+
+        [JsonConstructor]
+        public GameFile(string location, long size, string ezSize)
+        {
+            Location = location;
+            this.Size = size;
+            this.EZSize = ezSize;
+        }
+    }
+
+    public class ConfigFile
+    {
+        public ConfigIdentifier Identifier { get; set; }
+        public string Location { get; set; }
+        public bool KeepLocation { get; set; }
+        public string RelativeLocation { get; set; }
+        public bool KeepRelative { get; set; }
+
+    }
+
+    public enum ConfigIdentifier
+    {
+        Config,
+        Save,
+        Manifest
     }
 }

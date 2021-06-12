@@ -12,7 +12,31 @@ namespace GameDiskManager.Types.Games
     public class SteamGame : Game
     {
         public string AppID { get; set; }
-        public string Manifest { get; set; }
+        public string Manifest { get
+            {
+                if (this.ConfigFiles == null || this.ConfigFiles.Count == 0)
+                    return "";
+                return this.ConfigFiles.Find(x => x.Identifier == ConfigIdentifier.Manifest).Location;
+            } set
+            {
+                if (this.ConfigFiles == null || this.ConfigFiles.Count == 0)
+                {
+                    this.ConfigFiles = new List<ConfigFile>();
+                    this.ConfigFiles.Add(new ConfigFile
+                    {
+                        Identifier = ConfigIdentifier.Manifest,
+                        KeepLocation = false,
+                        KeepRelative = true,
+                        Location = value,
+                        RelativeLocation = Utils.GetRelativePath(Path.GetDirectoryName(this.Location), value)
+                    });
+                }
+                else
+                {
+                    this.ConfigFiles.Find(x => x.Identifier == ConfigIdentifier.Manifest).Location = value;
+                }
+            }
+        }
         public SteamGame(string dir) : base(dir)
         {
 
@@ -26,10 +50,10 @@ namespace GameDiskManager.Types.Games
             Manifest = manifest;
         }
 
-        public async override Task<GameMigration> Migrate(string dest, DateTime plannedDT)
+        public override GameMigration Migrate(string dest, DateTime plannedDT)
         {
-            GameMigration gm = await base.Migrate(dest, plannedDT);
-
+            GameMigration gm = base.Migrate(dest, plannedDT);
+            
             Launcher steam = Data.LauncherByID(this.LauncherID);
 
             string oldDir = steam.GameDirectories.Where(x => x.Contains(Data.DriveByID(gm.From_DriveID).Name)).First();
@@ -39,11 +63,16 @@ namespace GameDiskManager.Types.Games
             string newDest = Manifest.Replace(oldDir, newDir);
 
             Console.WriteLine("Moving {0} to {1}", Manifest, newDest);
-            FastMove.FMove(Manifest, newDest);
+            MigrationFile file = new MigrationFile
+            {
+                source = Manifest,
+                destination = newDest
+            };
+            FastMove.FMove(ref file);
             Manifest = newDest;
 
             Data.SaveDataStore();
-
+            
             return gm;
         }
     }

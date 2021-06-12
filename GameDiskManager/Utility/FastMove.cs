@@ -6,22 +6,6 @@ namespace GameDiskManager.Utility
 {
     public static class FastMove
     {
-        /// <summary> Time the Move
-        /// </summary> 
-        /// <param name="source">Source file path</param> 
-        /// <param name="destination">Destination file path</param> 
-        public static void MoveTime(string source, string destination)
-        {
-            DateTime start_time = DateTime.Now;
-            FMove(source, destination);
-            long size = new FileInfo(destination).Length;
-            int milliseconds = 1 + (int)((DateTime.Now - start_time).TotalMilliseconds);
-            // size time in milliseconds per hour
-            long tsize = size * 3600000 / milliseconds;
-            tsize = tsize / (int)Math.Pow(2, 30);
-            Console.WriteLine(tsize + "GB/hour");
-        }
-
         /// <summary>
         /// 
         /// </summary>
@@ -66,6 +50,12 @@ namespace GameDiskManager.Utility
         /// <param name="destination">Destination file path</param> 
         public static void FMove(ref MigrationFile file, bool skipValidation = true)
         {
+            if (!File.Exists(file.source))
+            {
+                file.Exception = new FileNotFoundException("File not found", file.source);
+                file.Status = MigrationStatus.Failed;
+                return;
+            }
             int array_length = (int)Math.Pow(2, 19);
             byte[] dataArray = new byte[array_length];
             using (FileStream fsread = new FileStream

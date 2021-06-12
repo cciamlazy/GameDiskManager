@@ -254,7 +254,7 @@ namespace GameDiskManager.Forms
 
             Game g = Data.GameByID(gameId);
 
-            await g.Migrate(toDriveId);
+            g.Migrate(toDriveId);
 
             ReloadListView();
         }
