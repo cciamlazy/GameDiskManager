@@ -52,7 +52,7 @@ namespace GameDiskManager.Utility
         {
             if (!File.Exists(file.source))
             {
-                file.Exception = new FileNotFoundException("File not found", file.source);
+                file.Exception = new FileNotFoundException("File not found: " + file.source, file.source);
                 file.Status = MigrationStatus.Failed;
                 return;
             }

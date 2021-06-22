@@ -24,21 +24,15 @@ namespace GameDiskManager.Forms
             InitializeComponent();
             synchronizationContext = SynchronizationContext.Current;
             gameMigration = migration;
+            updateProgress.Start();
+            migrationWorker.RunWorkerAsync();
         }
 
         private void AddError(Exception e)
         {
-            synchronizationContext.Post(new SendOrPostCallback(o =>
-            {
-                string err = string.Format("{0}: {1}", (errorList.Items.Count + 1), e.Message);
-                errorList.Items.Add(err);
-                errors.Text = errorList.Items.Count.ToString();
-            }), true);
-        }
-
-        private void updateTimer_Tick(object sender, EventArgs e)
-        {
-            //UpdateMigrationProgress();
+            string err = string.Format("{0}: {1}", (errorList.Items.Count + 1), e.Message);
+            errorList.Items.Add(err);
+            errors.Text = errorList.Items.Count.ToString();
         }
 
         private void UpdateMigrationProgress(int progress, MigrationProgressState progressState)
@@ -68,6 +62,8 @@ namespace GameDiskManager.Forms
                 estimatedTime.Text = "Estimating...";
             }
 
+            totalSize.Text = Utils.BytesToString(this.gameMigration.TotalSize);
+
             processedAmt.Text = Utils.BytesToString(this.gameMigration.Moved);
 
             speed.Text = Utils.TransferSpeed(moved, (int)Math.Round(t.TotalSeconds));
@@ -77,8 +73,13 @@ namespace GameDiskManager.Forms
             progressBar.Value = (int)(moved / 1000);
 
             // Progress files
-            files.Text = progressState.Files;
-            migratingFileName.Text = progressState.FileName;
+            if (progressState.Files != null)
+                files.Text = progressState.Files;
+            if (progressState.FileName != null)
+                migratingFileName.Text = progressState.FileName;
+
+            if (progressState.State != null)
+                status.Text = progressState.State;
 
             // Errors
             if (progressState.Error != null)
@@ -90,7 +91,6 @@ namespace GameDiskManager.Forms
             if (migrationWorker.IsBusy != true)
             {
                 // Start the asynchronous operation.
-                migrationWorker.RunWorkerAsync();
             }
         }
 
@@ -101,6 +101,8 @@ namespace GameDiskManager.Forms
             startTime = DateTime.Now;
 
             Game game = Data.GameByID(this.gameMigration.GameID);
+
+            Data.LauncherByID(game.LauncherID).CloseLauncher();
 
             this.gameMigration.TotalSize = game.Size;
 
@@ -122,6 +124,39 @@ namespace GameDiskManager.Forms
                 string path = this.gameMigration.DestinationRoot + s;
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
+            }
+
+            ConfigFile[] configs = game.ConfigFiles.Where(x => !x.KeepLocation).ToArray();
+            for (int i = 0; i < configs.Count(); i++)
+            {
+                if (!configs[i].KeepLocation)
+                {
+                    MigrationProgressState progressState = new MigrationProgressState
+                    {
+                        State = "Migration Configurations",
+                        Files = string.Format("{0}/{1}", (i + 1).ToString(), configs.Count()),
+                        FileName = configs[i].Location
+                    };
+
+                    string newPath = "";
+
+                    if (configs[i].KeepRelative)
+                    {
+                        newPath = Path.Combine(this.gameMigration.DestinationRoot, configs[i].RelativeLocation);
+                    }
+                    MigrationFile configFile = new MigrationFile
+                    {
+                        source = configs[i].Location,
+                        destination = newPath
+                    };
+                    FastMove.FMove(ref configFile);
+
+                    if (configFile.Status == MigrationStatus.Failed)
+                    {
+                        progressState.Error = configFile.Exception;
+                    }
+                    worker.ReportProgress(i, progressState);
+                }
             }
 
             for (int i = 0; i < this.gameMigration.MigrationFiles.Length; i++)
@@ -156,45 +191,8 @@ namespace GameDiskManager.Forms
                 }
             }
 
-            ConfigFile[] configs = game.ConfigFiles.Where(x => !x.KeepLocation).ToArray();
-            for (int i = 0; i < configs.Count(); i++)
-            {
-                if (!configs[i].KeepLocation)
-                {
-                    MigrationProgressState progressState = new MigrationProgressState
-                    {
-                        State = "Migration Configs...",
-                        Files = string.Format("{0}/{1}", (i + 1).ToString(), configs.Count()),
-                        FileName = configs[i].Location
-                    };
-
-                    string newPath = "";
-
-                    if (configs[i].KeepRelative)
-                    {
-                        string relativePath = Utils.GetRelativePath(Path.GetDirectoryName(game.Location), configs[i].Location);
-                        newPath = Path.Combine(this.gameMigration.DestinationRoot, relativePath);
-                    }
-                    MigrationFile configFile = new MigrationFile
-                    {
-                        source = configs[i].Location,
-                        destination = newPath
-                    };
-                    FastMove.FMove(ref configFile);
-
-                    if (configFile.Status == MigrationStatus.Failed)
-                    {
-                        progressState.Error = configFile.Exception;
-                    }
-                    worker.ReportProgress(i, progressState);
-                }
-            }
-
-            // TODO: Implement Configuration migration
-
             this.gameMigration.Time_ms = (int)Math.Round((DateTime.Now - startTime).TotalMilliseconds);
 
-            Console.WriteLine("Done");
 
             this.gameMigration.Failed = this.gameMigration.MigrationFiles
                 .Where(x => x.Status == MigrationStatus.Failed)
@@ -229,6 +227,12 @@ namespace GameDiskManager.Forms
 
             Console.WriteLine("Migration Complete in {0} and migrated at an average speed of {1}", tsize, time);
 
+            worker.ReportProgress(100, new MigrationProgressState
+            {
+                State = "Complete",
+                FileName = ""
+            });
+
             Data.Store.Migrations.Add(this.gameMigration);
 
             Data.SaveDataStore();
@@ -242,9 +246,13 @@ namespace GameDiskManager.Forms
 
         private void migrationWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            // Add completion Code
+            // TODO: Add completion code
             Console.WriteLine("Complete");
             progressBar.Value = progressBar.Maximum;
+            this.DialogResult = DialogResult.OK;
+
+            if (closeOnComplete.Checked)
+                this.Close();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
@@ -253,6 +261,17 @@ namespace GameDiskManager.Forms
             {
                 migrationWorker.CancelAsync();
             }
+        }
+
+        private void backgroundButton_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+            // TODO: Implement status bar icon
+        }
+
+        private void updateProgress_Tick(object sender, EventArgs e)
+        {
+            UpdateMigrationProgress(0, new MigrationProgressState());
         }
     }
 

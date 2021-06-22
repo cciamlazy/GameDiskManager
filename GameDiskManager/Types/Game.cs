@@ -105,7 +105,8 @@ namespace GameDiskManager.Types
 
 
                 var gameExe = GameFiles.Where(x => new FileInfo(x.Location).Extension == ".exe")
-                    .Where(x => new FileInfo(x.Location).Directory.FullName == this.Location)
+                    //.Where(x => new FileInfo(x.Location).Directory.FullName == this.Location)
+                    .Where(x => !new FileInfo(x.Location).Name.Contains("UnityCrashHandler32.exe"))
                     .MaxBy(x => new FileInfo(x.Location).Length).Take(1);
 
                 if (gameExe != null && gameExe.Count() > 0)

@@ -3,7 +3,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace GameDiskManager.Utility
+namespace GDMLib
 {
     public static class Serializer<T>
     {

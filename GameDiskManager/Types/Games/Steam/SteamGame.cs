@@ -28,7 +28,7 @@ namespace GameDiskManager.Types.Games
                         KeepLocation = false,
                         KeepRelative = true,
                         Location = value,
-                        RelativeLocation = Utils.GetRelativePath(Path.GetDirectoryName(this.Location), value)
+                        RelativeLocation = "..\\" + Utils.GetRelativePath(this.Location, value)
                     });
                 }
                 else
@@ -52,28 +52,9 @@ namespace GameDiskManager.Types.Games
 
         public override GameMigration Migrate(string dest, DateTime plannedDT)
         {
-            GameMigration gm = base.Migrate(dest, plannedDT);
-            
-            Launcher steam = Data.LauncherByID(this.LauncherID);
 
-            string oldDir = steam.GameDirectories.Where(x => x.Contains(Data.DriveByID(gm.From_DriveID).Name)).First();
 
-            string newDir = steam.GameDirectories.Where(x => x.Contains(Data.DriveByID(gm.To_DriveID).Name)).First();
-
-            string newDest = Manifest.Replace(oldDir, newDir);
-
-            Console.WriteLine("Moving {0} to {1}", Manifest, newDest);
-            MigrationFile file = new MigrationFile
-            {
-                source = Manifest,
-                destination = newDest
-            };
-            FastMove.FMove(ref file);
-            Manifest = newDest;
-
-            Data.SaveDataStore();
-            
-            return gm;
+            return base.Migrate(dest, plannedDT);
         }
     }
 }

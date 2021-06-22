@@ -44,15 +44,16 @@ namespace GameDiskManager.Forms
             this.label8 = new System.Windows.Forms.Label();
             this.totalSize = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
+            this.status = new System.Windows.Forms.Label();
             this.migratingFileName = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.errorList = new System.Windows.Forms.ListBox();
             this.cancelButton = new System.Windows.Forms.Button();
             this.pauseButton = new System.Windows.Forms.Button();
             this.backgroundButton = new System.Windows.Forms.Button();
-            this.updateTimer = new System.Windows.Forms.Timer(this.components);
             this.migrationWorker = new System.ComponentModel.BackgroundWorker();
+            this.closeOnComplete = new System.Windows.Forms.CheckBox();
+            this.updateProgress = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // label1
@@ -190,14 +191,14 @@ namespace GameDiskManager.Forms
             this.label10.TabIndex = 8;
             this.label10.Text = "Total size:";
             // 
-            // label11
+            // status
             // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(15, 125);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(65, 17);
-            this.label11.TabIndex = 14;
-            this.label11.Text = "Migrating";
+            this.status.AutoSize = true;
+            this.status.Location = new System.Drawing.Point(15, 125);
+            this.status.Name = "status";
+            this.status.Size = new System.Drawing.Size(65, 17);
+            this.status.TabIndex = 14;
+            this.status.Text = "Migrating";
             // 
             // migratingFileName
             // 
@@ -255,11 +256,7 @@ namespace GameDiskManager.Forms
             this.backgroundButton.TabIndex = 20;
             this.backgroundButton.Text = "Background";
             this.backgroundButton.UseVisualStyleBackColor = true;
-            // 
-            // updateTimer
-            // 
-            this.updateTimer.Enabled = true;
-            this.updateTimer.Tick += new System.EventHandler(this.updateTimer_Tick);
+            this.backgroundButton.Click += new System.EventHandler(this.backgroundButton_Click);
             // 
             // migrationWorker
             // 
@@ -269,19 +266,36 @@ namespace GameDiskManager.Forms
             this.migrationWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.migrationWorker_ProgressChanged);
             this.migrationWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.migrationWorker_RunWorkerCompleted);
             // 
+            // closeOnComplete
+            // 
+            this.closeOnComplete.AutoSize = true;
+            this.closeOnComplete.Location = new System.Drawing.Point(18, 404);
+            this.closeOnComplete.Name = "closeOnComplete";
+            this.closeOnComplete.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.closeOnComplete.Size = new System.Drawing.Size(150, 21);
+            this.closeOnComplete.TabIndex = 21;
+            this.closeOnComplete.Text = ":Close on completion";
+            this.closeOnComplete.UseVisualStyleBackColor = true;
+            // 
+            // updateProgress
+            // 
+            this.updateProgress.Interval = 1000;
+            this.updateProgress.Tick += new System.EventHandler(this.updateProgress_Tick);
+            // 
             // MigrationProgress
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(603, 433);
+            this.Controls.Add(this.closeOnComplete);
             this.Controls.Add(this.backgroundButton);
             this.Controls.Add(this.pauseButton);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.errorList);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.migratingFileName);
-            this.Controls.Add(this.label11);
+            this.Controls.Add(this.status);
             this.Controls.Add(this.processedAmt);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.speed);
@@ -325,14 +339,15 @@ namespace GameDiskManager.Forms
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label totalSize;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label status;
         private System.Windows.Forms.Label migratingFileName;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.ListBox errorList;
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.Button pauseButton;
         private System.Windows.Forms.Button backgroundButton;
-        private System.Windows.Forms.Timer updateTimer;
         private System.ComponentModel.BackgroundWorker migrationWorker;
+        private System.Windows.Forms.CheckBox closeOnComplete;
+        private System.Windows.Forms.Timer updateProgress;
     }
 }

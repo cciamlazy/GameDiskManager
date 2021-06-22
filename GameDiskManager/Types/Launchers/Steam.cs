@@ -94,10 +94,12 @@ namespace GameDiskManager.Types.Launchers
 
                     string gameDir = steamapps + "common\\" + gameManifest.Value["installdir"].ToString();
 
-                    if (Data.Store.Games.Find(x => /*x.GetType() == typeof(SteamGame) &&*/ x.Name.Replace(" ","").ToLower() == gameManifest.Value["name"].ToString().Replace(" ", "").ToLower()) == null)
+                    SteamGame game = Data.Store.Games.Find(x => x.Name.Replace(" ", "").ToLower() == gameManifest.Value["name"].ToString().Replace(" ", "").ToLower()) as SteamGame;
+
+                    if (game == null)
                     {
                         _progress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), _progress.GetProgress() + 1);
-                        SteamGame game = new SteamGame(gameDir);
+                        game = new SteamGame(gameDir);
 
                         game.AppID = gameManifest.Value["appid"].ToString();
                         game.Name = gameManifest.Value["name"].ToString();
@@ -113,7 +115,8 @@ namespace GameDiskManager.Types.Launchers
                     }
                     else
                     {
-                        _progress.UpdateProgress("Tracked game. Skipping", _progress.GetProgress() + 2);
+                        game.Scan();
+                        _progress.UpdateProgress("Alreading tracking " + game.Name + ". Scanning", _progress.GetProgress() + 2);
                     }
                 }
                 Data.SaveDataStore();
