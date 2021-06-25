@@ -71,49 +71,10 @@ namespace GameDiskManager
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
-        internal static void OnThreadException(object sender, System.Threading.ThreadExceptionEventArgs t)
-        {
-            Exception e = t.Exception;
-            StackTrace st = new StackTrace(e);
-            try
-            {
-                CreateErrorLogFolder();
-
-                ErrorLog log = GenerateErrorLog(e);
-                bugReporter = new BugReporter(log);
-            }
-            catch
-            {
-                MessageBox.Show("Fatal error prevented the generation of bug reporter. You are seeing this to prevent an error loop.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
         private static void CreateErrorLogFolder()
         {
             if (!Directory.Exists(Path.Combine(Program.DataPath, "ErrorLog")))
                 Directory.CreateDirectory(Path.Combine(Program.DataPath, "ErrorLog"));
-        }
-
-        private static ErrorLog GenerateErrorLog(Exception e)
-        {
-            return new ErrorLog()
-            {
-                Name = Environment.UserName,
-                Date = DateTime.Now.ToString("M-d-yyyy"),
-                Time = DateTime.Now.ToString("h-mm-ss tt"),
-                Version = GetUpdateFile(Path.Combine(DataPath, "CurrentVersion.json")).Version,
-                StackTrace = e.StackTrace,
-                Source = e.Source,
-                Message = e.Message,
-                //Data = data
-            };
-        }
-
-        private static void WriteErrorLog(ErrorLog log)
-        {
-            var path = Path.Combine(Program.DataPath + "ErrorLog", log.Date + " " + log.Time + " Error.json");
-
-            Serializer<ErrorLog>.WriteToJSONFile(log, path);
         }
     }
 }

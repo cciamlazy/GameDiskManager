@@ -96,6 +96,8 @@ namespace GDMLib
             serializer.NullValueHandling = NullValueHandling.Include;
             serializer.TypeNameHandling = TypeNameHandling.All;
 
+            FileSystemHandler.CreateDirectory(Path.GetDirectoryName(path));
+
             using (StreamWriter sw = new StreamWriter(path))
             {
                 using (JsonWriter writer = new JsonTextWriter(sw))

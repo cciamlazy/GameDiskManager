@@ -1,5 +1,7 @@
 ﻿using Gameloop.Vdf;
 using Gameloop.Vdf.Linq;
+using GDMLib.Games;
+using GDMLib.TransitoryData;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,29 +13,20 @@ namespace GDMLib.Launchers
 {
     public class Steam : Launcher
     {
-        ScanProgress _progress;
 
-        public async override Task<bool> ScanGames()
+        public override void ScanGames(ref ScanProgress scanProgress)
         {
-            await base.ScanGames();
-
-            _progress = new ScanProgress();
-            _progress.Show();
-
             GameDirectories = GetSteamDirectories();
 
-            _progress.ProgressMax(CalculateGameCount());
+            scanProgress.MaxProgress = CalculateGameCount();
 
-            await Task.Run(() =>
+            foreach (string s in GameDirectories)
             {
-                foreach (string s in GameDirectories)
-                {
-                    GetSteamGames(s);
-                }
-            });
-            _progress.UpdateProgress("Scan complete", _progress.GetProgress() + 1);
-            _progress.Close();
-            return true;
+                ScanSteamGames(s, ref scanProgress);
+            }
+
+            scanProgress.CurrentStatus = "Scan Complete";
+            scanProgress.Progress = scanProgress.MaxProgress;
         }
 
         private int CalculateGameCount()
@@ -76,7 +69,7 @@ namespace GDMLib.Launchers
             return dirs.ToArray();
         }
 
-        private void GetSteamGames(string dir)
+        private void ScanSteamGames(string dir, ref ScanProgress scanProgress)
         {
             string steamapps = dir + "\\steamapps\\";
             if (Directory.Exists(steamapps))
@@ -95,7 +88,7 @@ namespace GDMLib.Launchers
 
                     if (game == null)
                     {
-                        _progress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), _progress.GetProgress() + 1);
+                        scanProgress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), scanProgress.Progress + 1);
                         game = new Games.SteamGame(gameDir);
 
                         game.AppID = gameManifest.Value["appid"].ToString();
@@ -108,12 +101,13 @@ namespace GDMLib.Launchers
 
                         //Data.Store.Games.Add(game);
 
-                        _progress.UpdateProgress("Added " + game.Name, _progress.GetProgress() + 1);
+                        scanProgress.UpdateProgress("Added " + game.Name, scanProgress.Progress + 1);
                     }
                     else
                     {
                         game.Scan();
-                        _progress.UpdateProgress("Alreading tracking " + game.Name + ". Scanning", _progress.GetProgress() + 2);
+
+                        scanProgress.UpdateProgress("Alreading tracking " + game.Name + ". Scanning", scanProgress.Progress + 2);
                     }
                 }
                 Data.SaveDataStore();

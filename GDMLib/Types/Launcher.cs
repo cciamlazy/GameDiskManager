@@ -13,7 +13,7 @@ namespace GDMLib
     {
         Steam
     }
-    public class Launcher
+    public abstract class Launcher
     {
         public int LauncherID { get; set; }
         public int DriveID { get; set; }
@@ -23,10 +23,7 @@ namespace GDMLib
         public LauncherType LauncherType { get; set; }
         public string[] GameDirectories { get; set; }
 
-        public async virtual Task<bool> ScanGames()
-        {
-            return true;
-        }
+        public abstract void ScanGames(ref TransitoryData.ScanProgress scanProgress);
 
         public virtual void CloseLauncher()
         {

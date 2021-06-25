@@ -37,7 +37,7 @@ namespace GDMLib
             System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
             startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
             startInfo.FileName = "cmd.exe";
-            startInfo.Arguments = String.Format("winsat disk -drive {0} -xml {1}{2}.xml", Name.Replace(":\\", ""), Data.SavePath + "\\winsat\\", Name.Replace(":\\", ""));
+            startInfo.Arguments = String.Format("winsat disk -drive {0} -xml {1}{2}.xml", Name.Replace(":\\", ""), FileSystemHandler.CombineDataPath("winsat\\"), Name.Replace(":\\", ""));
             process.StartInfo = startInfo;
             process.Start();
 

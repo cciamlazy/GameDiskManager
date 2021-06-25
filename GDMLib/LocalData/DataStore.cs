@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32;
+using GDMLib.Launchers;
 
 namespace GDMLib
 {
@@ -88,9 +89,9 @@ namespace GDMLib
         #endregion
         public static void InitializeDataStore()
         {
-            if (File.Exists(SavePath + "DataStore.json"))
+            if (File.Exists(FileSystemHandler.CombineDataPath("DataStore.json")))
             {
-                Store = Serializer<DataStore>.LoadFromJSONFile(SavePath + "DataStore.json");
+                Store = Serializer<DataStore>.LoadFromJSONFile(FileSystemHandler.CombineDataPath("DataStore.json"));
                 /*foreach (Game g in Store.Games)
                     g.Scan();*/
             }
@@ -224,11 +225,9 @@ namespace GDMLib
 
         public static void SaveDataStore()
         {
-            if (!Directory.Exists(Path.GetDirectoryName(SavePath + "DataStore.json")))
-                Directory.CreateDirectory(Path.GetDirectoryName(SavePath));
+            FileSystemHandler.CreateDirectory(FileSystemHandler.CombineDataPath(""));
             Serializer<DataStore>.WriteToJSONFile(Store,
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "GameDiskManager\\DataStore.json"));
+                FileSystemHandler.CombineDataPath("DataStore.json"));
         }
 
     }

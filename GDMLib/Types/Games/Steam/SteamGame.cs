@@ -49,11 +49,11 @@ namespace GDMLib.Games
             Manifest = manifest;
         }
 
-        public override GameMigration Migrate(string dest, DateTime plannedDT)
+        public override GameMigration GenerateMigration(string dest, DateTime plannedDT)
         {
 
 
-            return base.Migrate(dest, plannedDT);
+            return base.GenerateMigration(dest, plannedDT);
         }
     }
 }

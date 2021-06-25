@@ -22,7 +22,7 @@ namespace GDMLib
                 CreateErrorLogFolder();
 
                 ErrorLog log = GenerateErrorLog(e);
-                bugReporter = new BugReporter(log);
+                //bugReporter = new BugReporter(log);
             }
             catch
             {
@@ -32,8 +32,7 @@ namespace GDMLib
 
         private static void CreateErrorLogFolder()
         {
-            if (!Directory.Exists(Path.Combine(Program.DataPath, "ErrorLog")))
-                Directory.CreateDirectory(Path.Combine(Program.DataPath, "ErrorLog"));
+            FileSystemHandler.CreateDirectory(FileSystemHandler.CombineDataPath("ErrorLog"));
         }
 
         private static ErrorLog GenerateErrorLog(Exception e)
@@ -43,7 +42,7 @@ namespace GDMLib
                 Name = Environment.UserName,
                 Date = DateTime.Now.ToString("M-d-yyyy"),
                 Time = DateTime.Now.ToString("h-mm-ss tt"),
-                Version = GetUpdateFile(Path.Combine(DataPath, "CurrentVersion.json")).Version,
+                Version = Update.GetUpdateFile(FileSystemHandler.CombineDataPath("CurrentVersion.json")).Version,
                 StackTrace = e.StackTrace,
                 Source = e.Source,
                 Message = e.Message,
@@ -53,7 +52,7 @@ namespace GDMLib
 
         private static void WriteErrorLog(ErrorLog log)
         {
-            var path = Path.Combine(Program.DataPath + "ErrorLog", log.Date + " " + log.Time + " Error.json");
+            var path = FileSystemHandler.CombineDataPath("ErrorLog\\", log.Date + " " + log.Time + " Error.json");
 
             Serializer<ErrorLog>.WriteToJSONFile(log, path);
         }

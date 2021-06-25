@@ -75,7 +75,7 @@ namespace GDMLib
         {
             if (Directory.Exists(Location))
             {
-                Folders = Utility.DepthSearch.GetDirectories(Location).ToArray();
+                Folders = DepthSearch.GetDirectories(Location).ToArray();
                 string[] files = Directory.GetFiles(Location, "*.*", SearchOption.AllDirectories);
 
                 // Get most likely app name
@@ -148,12 +148,12 @@ namespace GDMLib
             }
         }
 
-        public virtual GameMigration Migrate (int toDriveId)
+        public virtual GameMigration GenerateMigration (int toDriveId)
         {
-            return this.Migrate(this.Location.Replace(Data.DriveByID(this.DriveID).Name, Data.DriveByID(toDriveId).Name), DateTime.Now);
+            return this.GenerateMigration(this.Location.Replace(Data.DriveByID(this.DriveID).Name, Data.DriveByID(toDriveId).Name), DateTime.Now);
         }
 
-        public virtual GameMigration Migrate (string dest, DateTime plannedDT)
+        public virtual GameMigration GenerateMigration (string dest, DateTime plannedDT)
         {
             this.Scan();
 
@@ -184,12 +184,6 @@ namespace GDMLib
                 };
 
                 migration.MigrationFiles[i] = item;
-            }
-
-            using (MigrationProgress mp = new MigrationProgress(migration))
-            {
-                mp.ShowDialog();
-                //mp.StartMigration();
             }
 
             //await migration.MigrateGame();
