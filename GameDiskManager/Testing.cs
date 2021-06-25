@@ -13,9 +13,9 @@ using System.Windows.Forms;
 
 namespace GameDiskManager
 {
-    public partial class Form1 : Form
+    public partial class Testing : Form
     {
-        public Form1()
+        public Testing()
         {
             InitializeComponent();
         }

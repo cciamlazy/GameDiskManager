@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GDMLib 
+namespace GDMLib
 {
     public class ErrorLog
     {
@@ -18,14 +18,14 @@ namespace GDMLib
         public string Message { get; set; }
         public string Sender { get; set; }
         public Dictionary<string, string> Data { get; set; }
-        private static ErrorLog GenerateErrorLog(Exception e)
+        public static ErrorLog GenerateErrorLog(Exception e)
         {
             return new ErrorLog()
             {
                 Name = Environment.UserName,
                 Date = DateTime.Now.ToString("M-d-yyyy"),
                 Time = DateTime.Now.ToString("h-mm-ss tt"),
-                Version = Update.GetUpdateFile(Path.Combine(DataPath, "CurrentVersion.json")).Version,
+                Version = Update.GetUpdateFile(FileSystemHandler.CombineDataPath("CurrentVersion.json")).Version,
                 StackTrace = e.StackTrace,
                 Source = e.Source,
                 Message = e.Message,
@@ -35,9 +35,12 @@ namespace GDMLib
 
         private static void WriteErrorLog(ErrorLog log)
         {
-            var path = Path.Combine(Program.DataPath + "ErrorLog", log.Date + " " + log.Time + " Error.json");
+            Serializer<ErrorLog>.WriteToJSONFile(log, FileSystemHandler.CombineDataPath("ErrorLog\\", log.Date + " " + log.Time + " Error.json"));
+        }
 
-            Serializer<ErrorLog>.WriteToJSONFile(log, path);
+        public static void CreateErrorLogFolder()
+        {
+            FileSystemHandler.CreateDirectory(FileSystemHandler.CombineDataPath("ErrorLog"));
         }
     }
 }

@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GDMUpdater", "GDMUpdater\GD
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GDMLib", "GDMLib\GDMLib.csproj", "{0C78723C-89B8-4C6C-8810-79DBC8FF077D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameDiskManagerApp", "GameDiskManagerApp\GameDiskManagerApp.csproj", "{E5955387-D1A2-455D-BFC6-00765A66D4C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameDiskManagerApp", "GameDiskManagerApp\GameDiskManagerApp.csproj", "{E5955387-D1A2-455D-BFC6-00765A66D4C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

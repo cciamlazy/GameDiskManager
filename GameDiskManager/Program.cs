@@ -84,7 +84,7 @@ namespace GameDiskManager
             }
             catch
             {
-                //it done messed up
+                MessageBox.Show("Fatal error prevented the generation of bug reporter. You are seeing this to prevent an error loop.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -117,13 +117,3 @@ namespace GameDiskManager
         }
     }
 }
-
-        public static Update GetUpdateFile(string path)
-        {
-            Update update = null;
-            if (File.Exists(path))
-            {
-                update = Serializer<Update>.LoadFromJSONFile(path);
-            }
-            return update;
-        }
