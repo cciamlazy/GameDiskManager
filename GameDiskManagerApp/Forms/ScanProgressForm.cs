@@ -17,47 +17,27 @@ namespace GameDiskManagerApp.Forms
     {
         private readonly SynchronizationContext synchronizationContext;
         private DateTime previousTime = DateTime.Now;
-        private ScanProgress _scanProgress = new ScanProgress();
-        private ScanProgress scanProgress
-        {
-            get
-            {
-                return _scanProgress;
-            }
-            set
-            {
-                _scanProgress = value;
-                progressBar.Maximum = value.MaxProgress;
-                progressBar.Value = value.Progress;
-                status.Text = value.CurrentStatus;
-            }
-        }
         public ScanProgressForm()
         {
             InitializeComponent();
             synchronizationContext = SynchronizationContext.Current;
         }
 
-        public void ScanGames(int luancherID)
+        public void ScanGames(int LauncherID)
         {
-            scanWorker.RunWorkerAsync();
+            scanWorker.RunWorkerAsync(LauncherID);
         }
 
-        public void ProgressMax(int maxProgress)
-        {
-            progressBar.Maximum = maxProgress;
-        }
-
-        public void UpdateProgress(string status, int progress)
+        /*public void UpdateProgress(string status, int progress)
         {
             var timeNow = DateTime.Now;
-            /*synchronizationContext.Post(new SendOrPostCallback(o =>
+            synchronizationContext.Post(new SendOrPostCallback(o =>
             {
                 Progress p = (Progress)o;
                 this.status.Text = p._status;
                 this.progressBar.Value = p._progress > progressBar.Maximum ? progressBar.Maximum : p._progress < progressBar.Minimum ? progressBar.Minimum : p._progress;
-            }), new Progress(status, progress));*/
-        }
+            }), new Progress(status, progress));
+        }*/
 
         public int GetProgress()
         {
@@ -66,7 +46,17 @@ namespace GameDiskManagerApp.Forms
 
         private void scanWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            //Data.Store.Launchers[Data.Store.Launchers.FindIndex(x => x.LauncherID == luancherID)].ScanGames(ref scanProgress);
+            int? launcherId = e.Argument as int?;
+            var del = new UpdateProgressDelegate(ScanProgressForm.UpdateProgress);
+            if (launcherId != null)
+                Data.Store.Launchers[Data.Store.Launchers.FindIndex(x => x.LauncherID == launcherId)].ScanGames(del);
+        }
+
+        public void UpdateProgress(ScanProgress progress)
+        {
+            this.status.Text = progress.CurrentStatus;
+            this.progressBar.Value = progress.Progress;
+            this.progressBar.Maximum = progress.MaxProgress;
         }
     }
 }

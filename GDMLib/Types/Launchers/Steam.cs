@@ -13,12 +13,14 @@ namespace GDMLib.Launchers
 {
     public class Steam : Launcher
     {
-
-        public override void ScanGames(ref ScanProgress scanProgress)
+        ScanProgress scanProgress = new ScanProgress();
+        public override void ScanGames(UpdateProgressDelegate callback)
         {
             GameDirectories = GetSteamDirectories();
 
-            scanProgress.MaxProgress = CalculateGameCount();
+            scanProgress.MaxProgress = CalculateGameCount(); //Duplication of code, refactor this
+
+            callback(scanProgress);
 
             foreach (string s in GameDirectories)
             {
@@ -77,40 +79,46 @@ namespace GDMLib.Launchers
                 string[] files = Directory.GetFiles(steamapps, "*.acf");
                 foreach(string f in files)
                 {
-                    VProperty gameManifest = VdfConvert.Deserialize(File.ReadAllText(f));
-
-                    List<ConfigFile> configFiles = new List<ConfigFile>();
-                    configFiles.Add(new ConfigFile { KeepLocation = false, Location = f });
-
-                    string gameDir = steamapps + "common\\" + gameManifest.Value["installdir"].ToString();
-
-                    Games.SteamGame game = Data.Store.Games.Find(x => x.Name.Replace(" ", "").ToLower() == gameManifest.Value["name"].ToString().Replace(" ", "").ToLower()) as Games.SteamGame;
-
-                    if (game == null)
-                    {
-                        scanProgress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), scanProgress.Progress + 1);
-                        game = new Games.SteamGame(gameDir);
-
-                        game.AppID = gameManifest.Value["appid"].ToString();
-                        game.Name = gameManifest.Value["name"].ToString();
-                        game.Manifest = f;
-
-                        //Console.WriteLine("acf relative path: " + Utils.GetRelativePath(game.Location, f));
-
-                        //Console.WriteLine("Relative Full Path: " + Path.Combine(Path.GetDirectoryName(game.Location), Utils.GetRelativePath(game.Location, f)));
-
-                        //Data.Store.Games.Add(game);
-
-                        scanProgress.UpdateProgress("Added " + game.Name, scanProgress.Progress + 1);
-                    }
-                    else
-                    {
-                        game.Scan();
-
-                        scanProgress.UpdateProgress("Alreading tracking " + game.Name + ". Scanning", scanProgress.Progress + 2);
-                    }
+                    AddOrUpdateGame(steamapps, f, ref scanProgress);
                 }
                 Data.SaveDataStore();
+            }
+        }
+
+        private void AddOrUpdateGame(string steamappsDir, string manifestDir, ref ScanProgress scanProgress)
+        {
+            VProperty gameManifest = VdfConvert.Deserialize(File.ReadAllText(manifestDir));
+
+            List<ConfigFile> configFiles = new List<ConfigFile>();
+
+            string gameDir = steamappsDir + "common\\" + gameManifest.Value["installdir"].ToString();
+
+            configFiles.Add(new ConfigFile { 
+                KeepLocation = false, 
+                Location = manifestDir, 
+                KeepRelative = true, 
+                Identifier = ConfigIdentifier.Manifest, 
+                RelativeLocation = "..\\" + Utils.GetRelativePath(gameDir, manifestDir)
+            });
+
+            SteamGame game = Data.Store.Games.Find(x => x.Name.Replace(" ", "").ToLower() == gameManifest.Value["name"].ToString().Replace(" ", "").ToLower()) as SteamGame;
+
+            if (game == null)
+            {
+                scanProgress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), scanProgress.Progress + 1);
+                game = new Games.SteamGame(gameDir);
+
+                game.AppID = gameManifest.Value["appid"].ToString();
+                game.Name = gameManifest.Value["name"].ToString();
+                game.Manifest = manifestDir;
+
+                scanProgress.UpdateProgress("Added " + game.Name, scanProgress.Progress + 1);
+            }
+            else
+            {
+                game.Scan();
+
+                scanProgress.UpdateProgress("Alreading tracking " + game.Name + ". Scanning", scanProgress.Progress + 2);
             }
         }
     }

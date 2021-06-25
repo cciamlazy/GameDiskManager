@@ -1,4 +1,5 @@
 ﻿
+using GDMLib.TransitoryData;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,7 +24,7 @@ namespace GDMLib
         public LauncherType LauncherType { get; set; }
         public string[] GameDirectories { get; set; }
 
-        public abstract void ScanGames(ref TransitoryData.ScanProgress scanProgress);
+        public abstract void ScanGames(UpdateProgressDelegate callback);
 
         public virtual void CloseLauncher()
         {
@@ -52,4 +53,6 @@ namespace GDMLib
             }
         }
     }
+
+    public delegate void UpdateProgressDelegate(ScanProgress scanProgress);
 }
