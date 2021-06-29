@@ -1,7 +1,7 @@
 ﻿using Gameloop.Vdf;
 using Gameloop.Vdf.Linq;
 using GDMLib.Games;
-using GDMLib.TransitoryData;
+using GDMLib.Transitory;
 using System;
 using System.Collections.Generic;
 using System.IO;

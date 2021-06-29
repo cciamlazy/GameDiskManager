@@ -1,5 +1,5 @@
 ﻿
-using GDMLib.TransitoryData;
+using GDMLib.Transitory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -58,6 +58,4 @@ namespace GDMLib
             }
         }
     }
-
-    public delegate void UpdateProgressDelegate(ScanProgress scanProgress);
 }

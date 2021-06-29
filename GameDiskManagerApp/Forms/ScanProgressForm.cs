@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using GDMLib;
-using GDMLib.TransitoryData;
+using GDMLib.Transitory;
 
 namespace GameDiskManagerApp.Forms
 {
@@ -31,17 +31,6 @@ namespace GameDiskManagerApp.Forms
             scanWorker.RunWorkerAsync(LauncherID);
         }
 
-        /*public void UpdateProgress(string status, int progress)
-        {
-            var timeNow = DateTime.Now;
-            synchronizationContext.Post(new SendOrPostCallback(o =>
-            {
-                Progress p = (Progress)o;
-                this.status.Text = p._status;
-                this.progressBar.Value = p._progress > progressBar.Maximum ? progressBar.Maximum : p._progress < progressBar.Minimum ? progressBar.Minimum : p._progress;
-            }), new Progress(status, progress));
-        }*/
-
         public int GetProgress()
         {
             return this.progressBar.Value;
@@ -49,10 +38,14 @@ namespace GameDiskManagerApp.Forms
 
         private void scanWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            int? launcherId = e.Argument as int?;
+            int? l = e.Argument as int?;
 
-            if (launcherId != null)
-                Data.Store.Launchers[Data.Store.Launchers.FindIndex(x => x.LauncherID == launcherId)].ScanGames(new UpdateProgressDelegate(this.UpdateProgress));
+            if (l != null)
+            {
+                int launcherId = l.Value;
+                Launcher launcher = Data.LauncherByID(launcherId);
+                launcher.ScanGames(new UpdateProgressDelegate(this.UpdateProgress));
+            }
         }
 
         public void UpdateProgress(ScanProgress progress)
