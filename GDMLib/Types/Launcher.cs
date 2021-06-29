@@ -24,7 +24,12 @@ namespace GDMLib
         public LauncherType LauncherType { get; set; }
         public string[] GameDirectories { get; set; }
 
-        public abstract void ScanGames(UpdateProgressDelegate callback);
+        protected UpdateProgressDelegate updateProgressDelegate;
+
+        public virtual void ScanGames(UpdateProgressDelegate callback)
+        {
+            updateProgressDelegate = callback;
+        }
 
         public virtual void CloseLauncher()
         {

@@ -16,8 +16,15 @@ namespace GDMLib
             FileSystemHandler.DataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\GameDiskManager\\Data\\";
         }
 
+        public static bool IsInitialized()
+        {
+            return FileSystemHandler.DataPath != null && FileSystemHandler.DataPath != "";
+        }
+
         public static string CombineDataPath(string path)
         {
+            if (!IsInitialized())
+                FileSystemHandler.Initialize();
             return Path.Combine(FileSystemHandler.DataPath, path);
         }
 

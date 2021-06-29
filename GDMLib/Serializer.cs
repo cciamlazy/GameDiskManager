@@ -115,7 +115,8 @@ namespace GDMLib
         /// <returns>The object that it constructed from the JSON file</returns>
         public static T LoadFromJSONFile(string path)
         {
-            return JSONStringToObject(File.ReadAllText(path));
+            string fileContent = File.ReadAllText(path);
+            return JSONStringToObject(fileContent);
         }
     }
 }

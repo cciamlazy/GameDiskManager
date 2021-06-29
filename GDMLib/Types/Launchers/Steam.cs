@@ -16,11 +16,13 @@ namespace GDMLib.Launchers
         ScanProgress scanProgress = new ScanProgress();
         public override void ScanGames(UpdateProgressDelegate callback)
         {
+            base.ScanGames(callback);
+
             GameDirectories = GetSteamDirectories();
 
             scanProgress.MaxProgress = CalculateGameCount(); //Duplication of code, refactor this
 
-            callback(scanProgress);
+            updateProgressDelegate(scanProgress);
 
             foreach (string s in GameDirectories)
             {
@@ -29,6 +31,7 @@ namespace GDMLib.Launchers
 
             scanProgress.CurrentStatus = "Scan Complete";
             scanProgress.Progress = scanProgress.MaxProgress;
+            updateProgressDelegate(scanProgress);
         }
 
         private int CalculateGameCount()
@@ -42,7 +45,7 @@ namespace GDMLib.Launchers
                     count += Directory.GetFiles(steamapps, "*.acf").Count();
                 }
             }
-            return count;
+            return count + 1;
         }
 
         private string[] GetSteamDirectories()
@@ -105,7 +108,7 @@ namespace GDMLib.Launchers
 
             if (game == null)
             {
-                scanProgress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), scanProgress.Progress + 1);
+                scanProgress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), scanProgress.Progress);
                 game = new Games.SteamGame(gameDir);
 
                 game.AppID = gameManifest.Value["appid"].ToString();
@@ -118,8 +121,9 @@ namespace GDMLib.Launchers
             {
                 game.Scan();
 
-                scanProgress.UpdateProgress("Alreading tracking " + game.Name + ". Scanning", scanProgress.Progress + 2);
+                scanProgress.UpdateProgress("Alreading tracking " + game.Name + ". Scanning", scanProgress.Progress + 1);
             }
+            updateProgressDelegate(scanProgress);
         }
     }
 }

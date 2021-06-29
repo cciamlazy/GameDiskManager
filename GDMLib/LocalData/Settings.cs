@@ -8,6 +8,8 @@ namespace GDMLib
 {
     public class Settings
     {
+        // Game Manager
+        public bool Load_GameIcons { get; set; } = true;
 
         //Bugs
         public int Bugs_Remember { get; set; } = 0;

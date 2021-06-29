@@ -26,7 +26,7 @@ namespace GameDiskManagerApp.Forms
             InitMenuStrip();
         }
 
-        ListViewGroup[] groups = new ListViewGroup[Data.Store.Drives.Count];
+        ListViewGroup[] driveGroups = new ListViewGroup[Data.Store.Drives.Count];
 
         ToolStripMenuItem[] launcherMenuItems;
         ToolStripMenuItem[,] launcherMenuSubItems;
@@ -68,46 +68,81 @@ namespace GameDiskManagerApp.Forms
 
         private void ReloadListView()
         {
-            gameList.Items.Clear();
-            gameImages.Images.Clear();
+            ClearGameLists();
             gameList.SmallImageList = gameImages;
 
             for (int i = 0; i < Data.Store.Drives.Count; i++)
             {
-                groups[i] = new ListViewGroup
-                {
-                    Header = String.Format("{1} ({0}) \r\n {2} free of {3}",
-                        Data.Store.Drives[i].Name, Data.Store.Drives[i].VolumeLabel, Utils.BytesToString(Data.Store.Drives[i].AvailableFreeSpace), Utils.BytesToString(Data.Store.Drives[i].TotalSize)),
-                    Name = Data.Store.Drives[i].Name,
-                    Tag = Data.Store.Drives[i].DriveID
-                };
-                if (!gameList.Groups.Contains(groups[i]))
-                    gameList.Groups.Add(groups[i]);
+                driveGroups[i] = getDriveListGroup(Data.Store.Drives[i]);
+                if (!gameList.Groups.Contains(driveGroups[i]))
+                    gameList.Groups.Add(driveGroups[i]);
             }
             foreach (Game g in Data.Store.Games)
             {
-                /*int imageIndex = -1;
-                if (g.ExecutableLocation != null && File.Exists(g.ExecutableLocation))
-                {
-                    Icon icon = Icon.ExtractAssociatedIcon(g.ExecutableLocation);
-                    if (icon != null)
-                    {
-                        gameImages.Images.Add(icon);
-                        imageIndex = gameImages.Images.Count - 1;
-                    }
-
-                }*/
-
-                string[] arr = { "", g.Name, g.EZSize, Math.Round((g.PercentDiskSpace * 100), 2).ToString() + "%", g.Priority.ToString(), g.Active.ToString() };
-                ListViewItem gi = new ListViewItem(arr);
-                gi.Tag = g.GameID;
-                gi.Group = Array.Find(groups, x => (int)x.Tag == g.DriveID);
-                //gi.ImageIndex = imageIndex;
-
-                gameList.Items.Add(gi);
+                gameList.Items.Add(getGameListItem(g));
             }
             gameList.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             gameList.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+        }
+
+        private ListViewItem getGameListItem(Game game)
+        {
+            string[] arr = { "", game.Name, game.EZSize, getPercentDisk(game.PercentDiskSpace), game.Priority.ToString(), game.Active.ToString() };
+            ListViewItem gameItem = new ListViewItem(arr);
+            gameItem.Tag = game.GameID;
+            gameItem.Group = getDriveGroup(game.DriveID);
+            if (Setting.Value.Load_GameIcons)
+                gameItem.ImageIndex = AddImageGetIndex(GetGameIcon(game.ExecutableLocation));
+
+            return gameItem;
+        }
+
+        private Icon GetGameIcon(string exeLocation)
+        {
+            if (exeLocation != null && File.Exists(exeLocation))
+            {
+                return Icon.ExtractAssociatedIcon(exeLocation);
+            }
+            return null;
+        }
+
+        private int AddImageGetIndex(Icon icon)
+        {
+            int imageIndex = -1;
+            if (icon != null)
+            {
+                gameImages.Images.Add(icon);
+                imageIndex = gameImages.Images.Count - 1;
+            }
+
+            return imageIndex;
+        }
+
+        private ListViewGroup getDriveGroup(int DriveID)
+        {
+            return Array.Find(driveGroups, x => (int)x.Tag == DriveID);
+        }
+
+        private string getPercentDisk(double percent)
+        {
+            return Math.Round((percent * 100), 2).ToString() + "%";
+        }
+
+        private ListViewGroup getDriveListGroup(Drive drive)
+        {
+            return new ListViewGroup
+            {
+                Header = String.Format("{1} ({0}) \r\n {2} free of {3}",
+                        drive.Name, drive.VolumeLabel, Utils.BytesToString(drive.AvailableFreeSpace), Utils.BytesToString(drive.TotalSize)),
+                Name = drive.Name,
+                Tag = drive.DriveID
+            };
+        }
+
+        private void ClearGameLists()
+        {
+            gameList.Items.Clear();
+            gameImages.Images.Clear();
         }
 
         ListViewItem lviDraggedItem;
@@ -191,21 +226,24 @@ namespace GameDiskManagerApp.Forms
 
         }
 
-        private async void launcherScanMenu_Click(object sender, EventArgs e)
+        private void toolStripReloadGameList_Click(object sender, EventArgs e)
+        {
+            ReloadListView();
+        }
+
+        private  void launcherScanMenu_Click(object sender, EventArgs e)
         {
             if (sender == null || ((ToolStripMenuItem)sender).Tag == null)
                 return;
+            ToolStripMenuItem clickedMenuItem = sender as ToolStripMenuItem;
+            
+            int launcherId = (int)clickedMenuItem.Tag;
 
-            using (ScanProgressForm scan = new ScanProgressForm())
-            {
-                scan.ShowDialog();
-                if (scan.DialogResult == DialogResult.OK)
-                {
-                    //Something?
-                }
-            }
+            ScanProgressForm scan = new ScanProgressForm(new UpdateViewDelegate(ReloadListView));
+            scan.Show();
+            scan.ScanGames(launcherId);
 
-            ReloadListView();
+            //ReloadListView();
         }
         #endregion
 

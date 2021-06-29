@@ -57,6 +57,8 @@ namespace GameDiskManagerApp.Forms
             this.scanWorker.WorkerReportsProgress = true;
             this.scanWorker.WorkerSupportsCancellation = true;
             this.scanWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.scanWorker_DoWork);
+            this.scanWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.scanWorker_ProgressChanged);
+            this.scanWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.scanWorker_RunWorkerCompleted);
             // 
             // ScanProgressForm
             // 

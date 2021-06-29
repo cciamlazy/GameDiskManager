@@ -279,14 +279,14 @@ namespace GDMUpdater
             {
                 return;
             }
-
-            WshShell shell = new WshShell();
-            IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutLocation);
+            /*
+            //WshShell shell = new WshShell();
+            //IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutLocation);
 
             shortcut.Description = "GameDiskManager";
             shortcut.IconLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\GameDiskManager\\ITT.ico";
             shortcut.TargetPath = pathToExe;
-            shortcut.Save();
+            shortcut.Save();*/
         }
 
         private void RemindButton_Click(object sender, EventArgs e)

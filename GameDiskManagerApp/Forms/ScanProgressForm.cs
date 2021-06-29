@@ -17,10 +17,13 @@ namespace GameDiskManagerApp.Forms
     {
         private readonly SynchronizationContext synchronizationContext;
         private DateTime previousTime = DateTime.Now;
-        public ScanProgressForm()
+        private UpdateViewDelegate updateViewCallback;
+        public ScanProgressForm(UpdateViewDelegate callback)
         {
             InitializeComponent();
             synchronizationContext = SynchronizationContext.Current;
+
+            updateViewCallback = callback;
         }
 
         public void ScanGames(int LauncherID)
@@ -47,16 +50,32 @@ namespace GameDiskManagerApp.Forms
         private void scanWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             int? launcherId = e.Argument as int?;
-            var del = new UpdateProgressDelegate(ScanProgressForm.UpdateProgress);
+
             if (launcherId != null)
-                Data.Store.Launchers[Data.Store.Launchers.FindIndex(x => x.LauncherID == launcherId)].ScanGames(del);
+                Data.Store.Launchers[Data.Store.Launchers.FindIndex(x => x.LauncherID == launcherId)].ScanGames(new UpdateProgressDelegate(this.UpdateProgress));
         }
 
         public void UpdateProgress(ScanProgress progress)
         {
-            this.status.Text = progress.CurrentStatus;
-            this.progressBar.Value = progress.Progress;
-            this.progressBar.Maximum = progress.MaxProgress;
+            scanWorker.ReportProgress(progress.Progress / progress.MaxProgress, progress);
+        }
+
+        private void scanWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            if (e != null)
+            {
+                ScanProgress progress = e.UserState as ScanProgress;
+
+                this.status.Text = progress.CurrentStatus;
+                this.progressBar.Value = progress.Progress;
+                this.progressBar.Maximum = progress.MaxProgress;
+            }
+        }
+
+        private void scanWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            updateViewCallback();
+            this.Close();
         }
     }
 }

@@ -18,6 +18,7 @@ namespace GDMLib.Games
                 return this.ConfigFiles.Find(x => x.Identifier == ConfigIdentifier.Manifest).Location;
             } set
             {
+                if (value == null || value == "") return;
                 if (this.ConfigFiles == null || this.ConfigFiles.Count == 0)
                 {
                     this.ConfigFiles = new List<ConfigFile>();
