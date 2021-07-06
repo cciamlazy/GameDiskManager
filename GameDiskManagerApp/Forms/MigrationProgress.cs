@@ -17,15 +17,13 @@ namespace GameDiskManagerApp.Forms
 {
     public partial class MigrationProgress : Form
     {
-        private readonly SynchronizationContext synchronizationContext;
         GameMigration gameMigration;
         MigrationHandler handler;
         DateTime startTime;
         public MigrationProgress(GameMigration migration)
         {
             InitializeComponent();
-            synchronizationContext = SynchronizationContext.Current;
-            gameMigration = migration;
+            this.gameMigration = migration;
             handler = new MigrationHandler(new UpdateMigrationProgressDelegate(this.UpdateProgressDel), this.gameMigration);
             updateProgress.Start();
             migrationWorker.RunWorkerAsync();
@@ -40,7 +38,7 @@ namespace GameDiskManagerApp.Forms
 
         private void UpdateMigrationProgress(MigrationProgressState progressState)
         {
-            this.gameMigration = this.handler.GameMigration;
+            this.gameMigration = this.handler.GetGameMigration();
             // Set Elapsed Time
             TimeSpan t = TimeSpan.FromMilliseconds((DateTime.Now - startTime).TotalMilliseconds);
             elapsedTime.Text = string.Format("{0:D2}:{1:D2}:{2:D2}",

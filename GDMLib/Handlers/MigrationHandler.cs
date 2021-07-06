@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GDMLib.Transitory;
 
 namespace GDMLib.Handlers
@@ -12,7 +9,6 @@ namespace GDMLib.Handlers
     {
         private UpdateMigrationProgressDelegate updateProgress;
         private GameMigration gameMigration;
-        public GameMigration GameMigration { get; }
         private Game game;
         public MigrationHandler(UpdateMigrationProgressDelegate progressDelegate, GameMigration migration)
         {
@@ -152,6 +148,11 @@ namespace GDMLib.Handlers
                 string path = this.gameMigration.DestinationRoot + s;
                 FileSystemHandler.CreateDirectory(path);
             }
+        }
+
+        public GameMigration GetGameMigration()
+        {
+            return gameMigration;
         }
     }
 }
