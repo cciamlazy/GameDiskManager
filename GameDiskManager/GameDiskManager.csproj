@@ -141,6 +141,7 @@
     <Compile Include="Types\Launchers\Steam.cs" />
     <Compile Include="Utility\DepthSearch.cs" />
     <Compile Include="Utility\FastMove.cs" />
+    <Compile Include="Utility\Utils.cs" />
     <EmbeddedResource Include="Testing.resx">
       <DependentUpon>Testing.cs</DependentUpon>
     </EmbeddedResource>

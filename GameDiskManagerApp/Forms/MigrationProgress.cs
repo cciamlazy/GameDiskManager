@@ -26,6 +26,7 @@ namespace GameDiskManagerApp.Forms
             InitializeComponent();
             synchronizationContext = SynchronizationContext.Current;
             gameMigration = migration;
+            handler = new MigrationHandler(new UpdateMigrationProgressDelegate(this.UpdateProgressDel), this.gameMigration);
             updateProgress.Start();
             migrationWorker.RunWorkerAsync();
         }
@@ -39,6 +40,7 @@ namespace GameDiskManagerApp.Forms
 
         private void UpdateMigrationProgress(MigrationProgressState progressState)
         {
+            this.gameMigration = this.handler.GameMigration;
             // Set Elapsed Time
             TimeSpan t = TimeSpan.FromMilliseconds((DateTime.Now - startTime).TotalMilliseconds);
             elapsedTime.Text = string.Format("{0:D2}:{1:D2}:{2:D2}",
@@ -47,8 +49,8 @@ namespace GameDiskManagerApp.Forms
                         t.Seconds);
 
             // Set time & speed
-            long moved = handler.gameMigration.MigrationFiles.Sum(x => x.sent);
-            double estSeconds = (gameMigration.TotalSize - moved) / ((double)moved / t.TotalSeconds);
+            long moved = this.gameMigration.MigrationFiles.Sum(x => x.sent);
+            double estSeconds = (this.gameMigration.TotalSize - moved) / ((double)moved / t.TotalSeconds);
             if (estSeconds <= TimeSpan.MaxValue.TotalSeconds)
             {
                 TimeSpan es =
@@ -64,14 +66,14 @@ namespace GameDiskManagerApp.Forms
                 estimatedTime.Text = "Estimating...";
             }
 
-            totalSize.Text = Utils.BytesToString(handler.gameMigration.TotalSize);
+            totalSize.Text = Utils.BytesToString(this.gameMigration.TotalSize);
 
-            processedAmt.Text = Utils.BytesToString(handler.gameMigration.Moved);
+            processedAmt.Text = Utils.BytesToString(this.gameMigration.Moved);
 
             speed.Text = Utils.TransferSpeed(moved, (int)Math.Round(t.TotalSeconds));
 
             // Progress bar
-            progressBar.Maximum = (int)(handler.gameMigration.TotalSize / 1000);
+            progressBar.Maximum = (int)(this.gameMigration.TotalSize / 1000);
             progressBar.Value = (int)(moved / 1000);
 
             // Progress files
@@ -101,8 +103,6 @@ namespace GameDiskManagerApp.Forms
             BackgroundWorker worker = sender as BackgroundWorker;
 
             startTime = DateTime.Now;
-
-            MigrationHandler handler = new MigrationHandler(new UpdateMigrationProgressDelegate(this.UpdateProgressDel), this.gameMigration);
 
             handler.DoMigration();
         }

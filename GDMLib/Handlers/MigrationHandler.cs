@@ -11,7 +11,8 @@ namespace GDMLib.Handlers
     public class MigrationHandler
     {
         private UpdateMigrationProgressDelegate updateProgress;
-        public GameMigration gameMigration { get; private set; }
+        private GameMigration gameMigration;
+        public GameMigration GameMigration { get; }
         private Game game;
         public MigrationHandler(UpdateMigrationProgressDelegate progressDelegate, GameMigration migration)
         {
