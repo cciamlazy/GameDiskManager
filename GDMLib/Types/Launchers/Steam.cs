@@ -84,7 +84,6 @@ namespace GDMLib.Launchers
                 {
                     AddOrUpdateGame(steamapps, f, ref scanProgress);
                 }
-                Data.SaveDataStore();
             }
         }
 
@@ -104,7 +103,7 @@ namespace GDMLib.Launchers
                 RelativeLocation = "..\\" + Utils.GetRelativePath(gameDir, manifestDir)
             });
 
-            SteamGame game = Data.Store.Games.Find(x => x.Name.Replace(" ", "").ToLower() == gameManifest.Value["name"].ToString().Replace(" ", "").ToLower()) as SteamGame;
+            SteamGame game = Data.GetGameByName(gameManifest.Value["name"].ToString()) as SteamGame;
 
             if (game == null)
             {

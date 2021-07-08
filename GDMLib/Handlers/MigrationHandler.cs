@@ -38,9 +38,7 @@ namespace GDMLib.Handlers
                 FileName = ""
             });
 
-            Data.Store.Migrations.Add(this.gameMigration);
-
-            Data.SaveDataStore();
+            Data.AddMigration(this.gameMigration);
         }
 
         private void MigrateFiles()

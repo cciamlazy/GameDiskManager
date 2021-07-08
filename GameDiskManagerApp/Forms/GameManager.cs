@@ -26,18 +26,18 @@ namespace GameDiskManagerApp.Forms
             InitMenuStrip();
         }
 
-        ListViewGroup[] driveGroups = new ListViewGroup[Data.Store.Drives.Count];
+        ListViewGroup[] driveGroups = new ListViewGroup[Data.DriveCount];
 
         ToolStripMenuItem[] launcherMenuItems;
         ToolStripMenuItem[,] launcherMenuSubItems;
 
         private void InitializeLaunchers()
         {
-            launcherMenuItems = new ToolStripMenuItem[Data.Store.Launchers.Count];
-            launcherMenuSubItems = new ToolStripMenuItem[Data.Store.Launchers.Count, 2];
-            for (int i = 0; i < Data.Store.Launchers.Count; i++)
+            launcherMenuItems = new ToolStripMenuItem[Data.LauncherCount];
+            launcherMenuSubItems = new ToolStripMenuItem[Data.LauncherCount, 2];
+            for (int i = 0; i < Data.LauncherCount; i++)
             {
-                Launcher l = Data.Store.Launchers[i];
+                Launcher l = Data.GetLauncherByIndex(i);
 
                 // 
                 // scanMenuItem
@@ -71,13 +71,13 @@ namespace GameDiskManagerApp.Forms
             ClearGameLists();
             gameList.SmallImageList = gameImages;
 
-            for (int i = 0; i < Data.Store.Drives.Count; i++)
+            for (int i = 0; i < Data.DriveCount; i++)
             {
-                driveGroups[i] = getDriveListGroup(Data.Store.Drives[i]);
+                driveGroups[i] = getDriveListGroup(Data.GetDriveByIndex(i));
                 if (!gameList.Groups.Contains(driveGroups[i]))
                     gameList.Groups.Add(driveGroups[i]);
             }
-            foreach (Game g in Data.Store.Games)
+            foreach (Game g in Data.GameList)
             {
                 gameList.Items.Add(getGameListItem(g));
             }
@@ -192,9 +192,7 @@ namespace GameDiskManagerApp.Forms
                 {
                     string gamePath = fbd.SelectedPath;
 
-                    Data.Store.Games.Add(new Game(gamePath));
-
-                    Data.SaveDataStore();
+                    new Game(gamePath);
 
                     ReloadListView();
                 }
@@ -206,7 +204,7 @@ namespace GameDiskManagerApp.Forms
             if (SelectedGameItem == null || SelectedGameItem.Tag == null)
                 return;
 
-            Game game = Data.Store.Games.Find(x => x.GameID == (int)SelectedGameItem.Tag);
+            Game game = Data.GetGameByID((int)SelectedGameItem.Tag);
             using (GameConfiguration gc = new GameConfiguration(game))
             {
                 if (gc.ShowDialog() == DialogResult.OK)
@@ -255,7 +253,7 @@ namespace GameDiskManagerApp.Forms
 
         private void InitMenuStrip()
         {
-            ToolStripItem[] toolStripItems = new ToolStripItem[staticMenuItems + Data.Store.Drives.Count];
+            ToolStripItem[] toolStripItems = new ToolStripItem[staticMenuItems + Data.DriveCount];
 
             // Static menu items
             toolStripItems[0] = new ToolStripMenuItem { Text = "Add Game", BackColor = Color.White };
@@ -273,9 +271,10 @@ namespace GameDiskManagerApp.Forms
             toolStripItems[staticMenuItems - 1] = new ToolStripMenuItem { Text = "Quick Migrate:", BackColor = Color.White, Enabled = false };
 
             // Dynamic drive items
-            for (int i = 0; i < Data.Store.Drives.Count; i++)
+            for (int i = 0; i < Data.DriveCount; i++)
             {
-                toolStripItems[staticMenuItems + i] = new ToolStripMenuItem { Text = "Migrate To " + Data.Store.Drives[i].Name, BackColor = Color.White, Tag = Data.Store.Drives[i].DriveID };
+                Drive drive = Data.DriveByID(i);
+                toolStripItems[staticMenuItems + i] = new ToolStripMenuItem { Text = "Migrate To " + drive.Name, BackColor = Color.White, Tag = drive.DriveID };
                 toolStripItems[staticMenuItems + i].Click += MoveToDriveItem_Click;
             }
 
@@ -319,7 +318,7 @@ namespace GameDiskManagerApp.Forms
                 if ((gameList.FocusedItem != null && gameList.FocusedItem.Bounds.Contains(e.Location)) || (gameList.SelectedItems != null && gameList.SelectedItems.Count == 1 && gameList.SelectedItems[0].Bounds.Contains(e.Location)))
                 {
                     SelectedGameItem = gameList.FocusedItem;
-                    Game g = Data.Store.Games.Find(x => x.GameID == (int)SelectedGameItem.Tag);
+                    Game g = Data.GameByID((int)SelectedGameItem.Tag);
 
                     gameMenuOptions.Items[1].Visible = true;
                     gameMenuOptions.Items[2].Visible = true;
@@ -328,7 +327,7 @@ namespace GameDiskManagerApp.Forms
                     for (int i = staticMenuItems; i < gameMenuOptions.Items.Count; i++)
                     {
                         bool enabled = true;
-                        Drive d = Data.Store.Drives.Find(x => x.DriveID == (int)gameMenuOptions.Items[i].Tag);
+                        Drive d = Data.DriveByID((int)gameMenuOptions.Items[i].Tag);
                         if (d.AvailableFreeSpace + d.KeepSpaceAvailable < g.Size)
                         {
                             enabled = false;

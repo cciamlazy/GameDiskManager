@@ -46,11 +46,14 @@ namespace GDMLib
 
         public Game (string dir, string name = "")
         {
-            Name = Regex.Replace(new DirectoryInfo(dir).Name, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0").Replace("  ", " ");
-            Location = dir;
-            GameID = Data.Store.GameIndex++;
+            this.Name = name;
+            if (name == "")
+                this.Name = Regex.Replace(new DirectoryInfo(dir).Name, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0").Replace("  ", " ");
 
-            Drive d = Data.Store.Drives.Find(x => this.Location.Contains(x.Name));
+            this.Location = dir;
+            this.GameID = Data.GameIndex++;
+
+            Drive d = Data.DriveByID(Data.GetDriveIDByName(this.Location));
             DriveID = d.DriveID;
             Scan();
             this.PercentDiskSpace = (double)this.Size / (double)d.TotalSize;
@@ -71,7 +74,7 @@ namespace GDMLib
             ConfigFiles = configfiles;
         }
 
-        public void Scan ()
+        public void Scan()
         {
             if (Directory.Exists(Location))
             {
@@ -133,10 +136,13 @@ namespace GDMLib
                     GameFiles[i].Location = GameFiles[i].Location.Replace(this.Location, "");
                 }
 
-                if (Data.Store != null && Data.Store.Drives != null)
+                try
                 {
-                    Drive d = Data.Store.Drives.Find(x => x.DriveID == this.DriveID);
-                    this.PercentDiskSpace = (double)this.Size / (double)d.TotalSize;
+                    this.PercentDiskSpace = (double)this.Size / (double)Data.GetDriveByID(this.DriveID).TotalSize;
+                }
+                catch (DirectoryNotFoundException e)
+                {
+                    Console.WriteLine("Drive not found. Can't calculate percent disk space taken");
                 }
 
                 Data.UpdateGame(this);
@@ -144,7 +150,6 @@ namespace GDMLib
             else
             {
                 Console.WriteLine("Directory doesn't exist");
-                //throw (new Exception());
             }
         }
 

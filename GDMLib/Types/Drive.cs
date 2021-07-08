@@ -52,7 +52,7 @@ namespace GDMLib
 
         public static int GetDriveID(DirectoryInfo dir)
         {
-            return Data.Store.Drives.Find(x => dir.FullName.Contains(x.Name)).DriveID;
+            return Data.GetDriveIDByName(dir.FullName);
         }
 
         public override bool Equals(object obj) => Equals(obj as Drive);

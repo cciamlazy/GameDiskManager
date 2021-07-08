@@ -23,7 +23,7 @@ namespace GDMLib
     }
     public static class Data
     {
-        public static DataStore Store { get; set; }
+        private static DataStore Store { get; set; }
 
         #region Control Variables
         public static int DriveIndex
@@ -183,6 +183,66 @@ namespace GDMLib
             }
         }
 
+        #region DataStore Interaction
+
+        public static void AddMigration(GameMigration migration)
+        {
+            if (!(migration.MigrationID >= 0))
+                migration.MigrationID = MigrationIndex++;
+            Store.Migrations.Add(migration);
+        }
+
+        public static int GetDriveIDByName(string name)
+        {
+            return Store.Drives.Find(x => name.Contains(x.Name)).DriveID;
+        }
+
+        #endregion
+
+        #region Get Data
+
+        public static int DriveCount { get { return Store.Drives.Count; } }
+
+        public static Drive GetDriveByIndex (int i)
+        {
+            if (i < DriveCount)
+                return Store.Drives[i];
+            return null;
+        }
+
+        public static Drive GetDriveByID(int driveId)
+        {
+            if (Data.Store != null && Data.Store.Drives != null)
+            {
+                return Data.Store.Drives.Find(x => x.DriveID == driveId);
+            }
+            throw new DirectoryNotFoundException();
+        }
+
+        public static int LauncherCount { get { return Store.Launchers.Count; } }
+
+        public static Launcher GetLauncherByIndex (int i)
+        {
+            if (i < LauncherCount)
+                return Store.Launchers[i];
+            return null;
+        }
+
+        public static int GameCount { get { return Store.Games.Count; } }
+        public static List<Game> GameList { get { return Store.Games; } }
+
+        public static Game GetGameByName(string name)
+        {
+            return Store.Games.Find(x => x.Name.Replace(" ", "").ToLower() == name.Replace(" ", "").ToLower());
+        }
+
+        public static Game GetGameByID(int gameId)
+        {
+            return Store.Games.Find(x => x.GameID == gameId);
+        }
+
+        #endregion
+
         public static void UpdateData(List<Drive> drives)
         {
             Store.Drives.AddRange(Store.Drives.Except<Drive>(drives).ToList());
@@ -223,7 +283,7 @@ namespace GDMLib
             SaveDataStore();
         }
 
-        public static void SaveDataStore()
+        private static void SaveDataStore()
         {
             FileSystemHandler.CreateDirectory(FileSystemHandler.CombineDataPath(""));
             Serializer<DataStore>.WriteToJSONFile(Store,
