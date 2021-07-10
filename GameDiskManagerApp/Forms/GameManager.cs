@@ -57,11 +57,7 @@ namespace GameDiskManagerApp.Forms
                 launcherMenuItems[i].Name = l.Name + "MenuItem";
                 launcherMenuItems[i].Size = new System.Drawing.Size(180, 22);
                 launcherMenuItems[i].Text = l.Name;
-                if (File.Exists(l.ExecutableLocation))
-                {
-                    Icon icon = Icon.ExtractAssociatedIcon(l.ExecutableLocation);
-                    launcherMenuItems[i].Image = icon.ToBitmap();
-                }
+                launcherMenuItems[i].Image = FileSystemHandler.GetIconToBitmap(l.ExecutableLocation);
             }
             this.toolStripLaunchers.DropDownItems.AddRange(launcherMenuItems);
         }
@@ -92,18 +88,9 @@ namespace GameDiskManagerApp.Forms
             gameItem.Tag = game.GameID;
             gameItem.Group = getDriveGroup(game.DriveID);
             if (Setting.Value.Load_GameIcons)
-                gameItem.ImageIndex = AddImageGetIndex(GetGameIcon(game.ExecutableLocation));
+                gameItem.ImageIndex = AddImageGetIndex(FileSystemHandler.GetIcon(game.ExecutableLocation));
 
             return gameItem;
-        }
-
-        private Icon GetGameIcon(string exeLocation)
-        {
-            if (exeLocation != null && File.Exists(exeLocation))
-            {
-                return Icon.ExtractAssociatedIcon(exeLocation);
-            }
-            return null;
         }
 
         private int AddImageGetIndex(Icon icon)
@@ -297,13 +284,8 @@ namespace GameDiskManagerApp.Forms
 
             GameMigration migration = g.GenerateMigration(toDriveId);
 
-            using (MigrationProgress mp = new MigrationProgress(migration))
-            {
-                mp.ShowDialog();
-                //mp.StartMigration();
-            }
-
-            ReloadListView();
+            MigrationProgress mp = new MigrationProgress(migration, new UpdateViewDelegate(ReloadListView));
+            mp.Show();
         }
 
         /// <summary>
@@ -315,14 +297,13 @@ namespace GameDiskManagerApp.Forms
         {
             if (e.Button == MouseButtons.Right)
             {
-                if ((gameList.FocusedItem != null && gameList.FocusedItem.Bounds.Contains(e.Location)) || (gameList.SelectedItems != null && gameList.SelectedItems.Count == 1 && gameList.SelectedItems[0].Bounds.Contains(e.Location)))
+                bool validGame = IsValidGameItemRightClick(e.Location);
+                SetStaticMenuItemsVisible(validGame);
+                if (validGame)
                 {
                     SelectedGameItem = gameList.FocusedItem;
                     Game g = Data.GameByID((int)SelectedGameItem.Tag);
 
-                    gameMenuOptions.Items[1].Visible = true;
-                    gameMenuOptions.Items[2].Visible = true;
-                    gameMenuOptions.Items[staticMenuItems - 1].Visible = true;
                     // Set current drive to not be visible on context menu
                     for (int i = staticMenuItems; i < gameMenuOptions.Items.Count; i++)
                     {
@@ -341,21 +322,35 @@ namespace GameDiskManagerApp.Forms
                         gameMenuOptions.Items[i].Enabled = enabled;
                         gameMenuOptions.Items[i].Visible = i == IndexOf(gameMenuOptions.Items, g.DriveID) ? false : true;
                     }
-                    gameMenuOptions.Show(Cursor.Position);
                 }
                 else
                 {
-                    gameMenuOptions.Items[1].Visible = false;
-                    gameMenuOptions.Items[2].Visible = false;
-                    gameMenuOptions.Items[staticMenuItems - 1].Visible = false;
-                    for (int i = staticMenuItems; i < gameMenuOptions.Items.Count; i++)
-                    {
-                        gameMenuOptions.Items[i].Visible = false;
-                    }
-                    gameMenuOptions.Show(Cursor.Position);
                     SelectedGameItem = null;
                 }
+
+                gameMenuOptions.Show(Cursor.Position);
             }
+        }
+
+        private void SetStaticMenuItemsVisible(bool visible)
+        {
+            gameMenuOptions.Items[1].Visible = visible;
+            gameMenuOptions.Items[2].Visible = visible;
+            gameMenuOptions.Items[staticMenuItems - 1].Visible = visible;
+
+            if (!visible)
+            {
+                for (int i = staticMenuItems; i < gameMenuOptions.Items.Count; i++)
+                {
+                    gameMenuOptions.Items[i].Visible = false;
+                }
+            }
+        }
+
+        private bool IsValidGameItemRightClick(Point Location)
+        {
+            return (gameList.FocusedItem != null && gameList.FocusedItem.Bounds.Contains(Location)) || 
+                (gameList.SelectedItems != null && gameList.SelectedItems.Count == 1 && gameList.SelectedItems[0].Bounds.Contains(Location));
         }
 
         private static int IndexOf(ToolStripItemCollection list, int value)

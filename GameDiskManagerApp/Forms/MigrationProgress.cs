@@ -19,11 +19,13 @@ namespace GameDiskManagerApp.Forms
     {
         GameMigration gameMigration;
         MigrationHandler handler;
+        UpdateViewDelegate updateViewDelegate;
         DateTime startTime;
-        public MigrationProgress(GameMigration migration)
+        public MigrationProgress(GameMigration migration, UpdateViewDelegate updateView)
         {
             InitializeComponent();
             this.gameMigration = migration;
+            updateViewDelegate = updateView;
             handler = new MigrationHandler(new UpdateMigrationProgressDelegate(this.UpdateProgressDel), this.gameMigration);
             updateProgress.Start();
             migrationWorker.RunWorkerAsync();
@@ -122,6 +124,8 @@ namespace GameDiskManagerApp.Forms
             Console.WriteLine("Complete");
             progressBar.Value = progressBar.Maximum;
             this.DialogResult = DialogResult.OK;
+
+            updateViewDelegate();
 
             if (closeOnComplete.Checked)
                 this.Close();

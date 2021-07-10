@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -53,6 +54,34 @@ namespace GDMLib
         {
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
+        }
+
+        public static Bitmap GetIconToBitmap(string dir)
+        {
+            if (File.Exists(dir))
+            {
+                Icon icon = Icon.ExtractAssociatedIcon(dir);
+                return icon.ToBitmap();
+            }
+            return stringToImage("\u2327");
+        }
+
+        public static Icon GetIcon(string dir)
+        {
+            if (File.Exists(dir))
+            {
+                return Icon.ExtractAssociatedIcon(dir);
+            }
+            return null;
+        }
+
+        public static Bitmap stringToImage(string inputString)
+        {
+            byte[] imageBytes = Encoding.Unicode.GetBytes(inputString);
+            using (MemoryStream ms = new MemoryStream(imageBytes))
+            {
+                return new Bitmap(ms);
+            }
         }
     }
 }
