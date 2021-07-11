@@ -8,11 +8,16 @@ using System.Diagnostics;
 using System.Security.Principal;
 using System.Reflection;
 using GameDiskManagerApp.Forms;
+using System.Runtime.InteropServices;
 
 namespace GameDiskManagerApp
 {
     static class Program
     {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool AllocConsole();
+
         /// <summary>
         ///  The main entry point for the application.
         /// </summary> 
@@ -24,6 +29,10 @@ namespace GameDiskManagerApp
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+
+            //Application.Run(new Testing());
+
             Application.Run(new GameManager());
         }
 
@@ -33,6 +42,8 @@ namespace GameDiskManagerApp
 #if !DEBUG
             AdminRelauncher();
             Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Program.OnThreadException);
+#else
+            AllocConsole();
 #endif
 
             Setting.Load();

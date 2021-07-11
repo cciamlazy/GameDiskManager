@@ -1,7 +1,7 @@
 ﻿
 namespace GameDiskManagerApp
 {
-    partial class Form1
+    partial class Testing
     {
         /// <summary>
         ///  Required designer variable.

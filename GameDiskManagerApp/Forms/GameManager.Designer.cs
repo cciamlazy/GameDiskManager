@@ -1,4 +1,6 @@
 ﻿
+using GameDiskManagerApp.Interfaces;
+
 namespace GameDiskManagerApp.Forms
 {
     partial class GameManager
@@ -37,17 +39,18 @@ namespace GameDiskManagerApp.Forms
             this.game = new System.Windows.Forms.ColumnHeader();
             this.size = new System.Windows.Forms.ColumnHeader();
             this.diskTaken = new System.Windows.Forms.ColumnHeader();
-            this.priority = new System.Windows.Forms.ColumnHeader();
-            this.active = new System.Windows.Forms.ColumnHeader();
+            this.lastPlayedHeader = new System.Windows.Forms.ColumnHeader();
+            this.playtimeHeader = new System.Windows.Forms.ColumnHeader();
+            this.playtime2WksHeader = new System.Windows.Forms.ColumnHeader();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
             this.toolStripFile = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripManage = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripAddGame = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripNewMigration = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripReloadGameList = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripLaunchers = new System.Windows.Forms.ToolStripDropDownButton();
             this.addLauncherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gameImages = new System.Windows.Forms.ImageList(this.components);
-            this.toolStripReloadGameList = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -59,8 +62,9 @@ namespace GameDiskManagerApp.Forms
             this.game,
             this.size,
             this.diskTaken,
-            this.priority,
-            this.active});
+            this.lastPlayedHeader,
+            this.playtimeHeader,
+            this.playtime2WksHeader});
             this.gameList.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.gameList.FullRowSelect = true;
             this.gameList.GridLines = true;
@@ -74,10 +78,11 @@ namespace GameDiskManagerApp.Forms
             this.gameList.HideSelection = false;
             this.gameList.Location = new System.Drawing.Point(0, 28);
             this.gameList.Name = "gameList";
-            this.gameList.Size = new System.Drawing.Size(576, 339);
+            this.gameList.Size = new System.Drawing.Size(588, 350);
             this.gameList.TabIndex = 0;
             this.gameList.UseCompatibleStateImageBehavior = false;
             this.gameList.View = System.Windows.Forms.View.Details;
+            this.gameList.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.gameList_ColumnClick);
             this.gameList.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.gameList_ItemDrag);
             this.gameList.DragDrop += new System.Windows.Forms.DragEventHandler(this.gameList_DragDrop);
             this.gameList.DragEnter += new System.Windows.Forms.DragEventHandler(this.gameList_DragEnter);
@@ -102,13 +107,19 @@ namespace GameDiskManagerApp.Forms
             // 
             this.diskTaken.Text = "% Disk Space";
             // 
-            // priority
+            // lastPlayedHeader
             // 
-            this.priority.Text = "Priority";
+            this.lastPlayedHeader.Text = "Last Played";
+            this.lastPlayedHeader.Width = 80;
             // 
-            // active
+            // playtimeHeader
             // 
-            this.active.Text = "Active";
+            this.playtimeHeader.Text = "Playtime";
+            // 
+            // playtime2WksHeader
+            // 
+            this.playtime2WksHeader.Text = "Playtime last 2 weeks";
+            this.playtime2WksHeader.Width = 150;
             // 
             // toolStrip
             // 
@@ -164,6 +175,14 @@ namespace GameDiskManagerApp.Forms
             this.toolStripNewMigration.Text = "New Migration";
             this.toolStripNewMigration.Click += new System.EventHandler(this.toolStripNewMigration_Click);
             // 
+            // toolStripReloadGameList
+            // 
+            this.toolStripReloadGameList.Name = "toolStripReloadGameList";
+            this.toolStripReloadGameList.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
+            this.toolStripReloadGameList.Size = new System.Drawing.Size(206, 22);
+            this.toolStripReloadGameList.Text = "Reload Game List";
+            this.toolStripReloadGameList.Click += new System.EventHandler(this.toolStripReloadGameList_Click);
+            // 
             // toolStripLaunchers
             // 
             this.toolStripLaunchers.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -187,14 +206,6 @@ namespace GameDiskManagerApp.Forms
             this.gameImages.ImageSize = new System.Drawing.Size(16, 16);
             this.gameImages.TransparentColor = System.Drawing.Color.Transparent;
             // 
-            // toolStripReloadGameList
-            // 
-            this.toolStripReloadGameList.Name = "toolStripReloadGameList";
-            this.toolStripReloadGameList.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
-            this.toolStripReloadGameList.Size = new System.Drawing.Size(206, 22);
-            this.toolStripReloadGameList.Text = "Reload Game List";
-            this.toolStripReloadGameList.Click += new System.EventHandler(this.toolStripReloadGameList_Click);
-            // 
             // GameManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 21F);
@@ -207,6 +218,7 @@ namespace GameDiskManagerApp.Forms
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "GameManager";
             this.Text = "Game Manager";
+            this.SizeChanged += new System.EventHandler(this.GameManager_SizeChanged);
             this.toolStrip.ResumeLayout(false);
             this.toolStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -217,11 +229,10 @@ namespace GameDiskManagerApp.Forms
         #endregion
 
         private System.Windows.Forms.ListView gameList;
+        private GameListColumnSorter gameListColumnSorter;
         private System.Windows.Forms.ColumnHeader game;
         private System.Windows.Forms.ColumnHeader size;
         private System.Windows.Forms.ColumnHeader diskTaken;
-        private System.Windows.Forms.ColumnHeader priority;
-        private System.Windows.Forms.ColumnHeader active;
         private System.Windows.Forms.ToolStrip toolStrip;
         private System.Windows.Forms.ToolStripDropDownButton toolStripManage;
         private System.Windows.Forms.ToolStripMenuItem toolStripAddGame;
@@ -232,5 +243,8 @@ namespace GameDiskManagerApp.Forms
         private System.Windows.Forms.ColumnHeader image;
         private System.Windows.Forms.ImageList gameImages;
         private System.Windows.Forms.ToolStripMenuItem toolStripReloadGameList;
+        private System.Windows.Forms.ColumnHeader lastPlayedHeader;
+        private System.Windows.Forms.ColumnHeader playtimeHeader;
+        private System.Windows.Forms.ColumnHeader playtime2WksHeader;
     }
 }

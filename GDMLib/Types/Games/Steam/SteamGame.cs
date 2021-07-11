@@ -11,6 +11,7 @@ namespace GDMLib.Games
     public class SteamGame : Game
     {
         public string AppID { get; set; }
+        public string SteamID { get; set; }
         public string Manifest { get
             {
                 if (this.ConfigFiles == null || this.ConfigFiles.Count == 0)
@@ -43,8 +44,8 @@ namespace GDMLib.Games
         }
 
         [JsonConstructor]
-        public SteamGame(int launcherId, int gameId, int driveId, string name, string location, int priority, DateTime lastplayed, int playtime, bool active, List<ConfigFile> configfiles, string appid, string manifest) 
-            : base (launcherId, gameId, driveId, name, location, priority, lastplayed, playtime, active, configfiles)
+        public SteamGame(int launcherId, int gameId, int driveId, string name, string location, int priority, DateTime lastplayed, int playtime, int playtime2Weeks, bool active, List<ConfigFile> configfiles, string appid, string manifest) 
+            : base (launcherId, gameId, driveId, name, location, priority, lastplayed, playtime, playtime2Weeks, active, configfiles)
         {
             AppID = appid;
             Manifest = manifest;

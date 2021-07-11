@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using GameDiskManagerApp.Interfaces;
 using GDMLib;
 
 namespace GameDiskManagerApp.Forms
@@ -17,6 +18,9 @@ namespace GameDiskManagerApp.Forms
         public GameManager()
         {
             InitializeComponent();
+            gameListColumnSorter = new GameListColumnSorter();
+            this.gameList.ListViewItemSorter = gameListColumnSorter;
+
             InitializeLaunchers();
             InitializeGameList();
         }
@@ -83,7 +87,7 @@ namespace GameDiskManagerApp.Forms
 
         private ListViewItem getGameListItem(Game game)
         {
-            string[] arr = { "", game.Name, game.EZSize, getPercentDisk(game.PercentDiskSpace), game.Priority.ToString(), game.Active.ToString() };
+            string[] arr = { "", game.Name, game.EZSize, getPercentDisk(game.PercentDiskSpace), game.LastPlayed.ToString("MM/dd/yyyy hh:mm tt"), MinutesToHourStr(game.PlayTime), MinutesToHourStr(game.PlayTime2Weeks) };
             ListViewItem gameItem = new ListViewItem(arr);
             gameItem.Tag = game.GameID;
             gameItem.Group = getDriveGroup(game.DriveID);
@@ -91,6 +95,11 @@ namespace GameDiskManagerApp.Forms
                 gameItem.ImageIndex = AddImageGetIndex(FileSystemHandler.GetIcon(game.ExecutableLocation));
 
             return gameItem;
+        }
+
+        private string MinutesToHourStr(int minutes)
+        {
+            return ((double)minutes / 60).ToString(@"0.00\h");
         }
 
         private int AddImageGetIndex(Icon icon)
@@ -165,6 +174,32 @@ namespace GameDiskManagerApp.Forms
             ListViewItem lviSibling = htInfo.Item;
 
             ListViewGroup lvgGroup = lviSibling.Group;
+        }
+
+        private void gameList_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            // Determine if clicked column is already the column that is being sorted.
+            if (e.Column == gameListColumnSorter.SortColumn)
+            {
+                // Reverse the current sort direction for this column.
+                if (gameListColumnSorter.Order == SortOrder.Ascending)
+                {
+                    gameListColumnSorter.Order = SortOrder.Descending;
+                }
+                else
+                {
+                    gameListColumnSorter.Order = SortOrder.Ascending;
+                }
+            }
+            else
+            {
+                // Set the column number that is to be sorted; default to ascending.
+                gameListColumnSorter.SortColumn = e.Column;
+                gameListColumnSorter.Order = SortOrder.Ascending;
+            }
+
+            // Perform the sort with these new sort options.
+            this.gameList.Sort();
         }
 
         #region Menu Option Events
@@ -367,5 +402,10 @@ namespace GameDiskManagerApp.Forms
         }
 
         #endregion
+
+        private void GameManager_SizeChanged(object sender, EventArgs e)
+        {
+            gameList.Size = new Size(ClientSize.Width - gameList.Location.X, ClientSize.Height - gameList.Location.Y);
+        }
     }
 }

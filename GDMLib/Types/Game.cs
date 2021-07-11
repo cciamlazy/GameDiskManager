@@ -41,6 +41,7 @@ namespace GDMLib
         public int Priority { get; set; }
         public DateTime LastPlayed { get; set; }
         public int PlayTime { get; set; }
+        public int PlayTime2Weeks { get; set; }
         public bool Active { get; set; }
         public List<ConfigFile> ConfigFiles { get; set; }
 
@@ -60,7 +61,7 @@ namespace GDMLib
         }
 
         [JsonConstructor]
-        public Game(int launcherId, int gameId, int driveId, string name, string location, int priority, DateTime lastplayed, int playtime, bool active, List<ConfigFile> configfiles)
+        public Game(int launcherId, int gameId, int driveId, string name, string location, int priority, DateTime lastplayed, int playtime, int playtime2Weeks, bool active, List<ConfigFile> configfiles)
         {
             LauncherID = launcherId;
             GameID = gameId;
@@ -70,6 +71,7 @@ namespace GDMLib
             Priority = priority;
             LastPlayed = lastplayed;
             PlayTime = playtime;
+            PlayTime2Weeks = playtime2Weeks;
             Active = active;
             ConfigFiles = configfiles;
         }

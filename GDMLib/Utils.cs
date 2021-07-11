@@ -75,5 +75,20 @@ namespace GDMLib
             float y = dest_rect.Top + (dest_rect.Height - hgt) / 2;
             return new RectangleF(x, y, wid, hgt);
         }
+
+        public static DateTime ConvertEpochToDateTime(int epoch)
+        {
+            return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(epoch);
+        }
+
+        public static TimeSpan ConvertMinutesToTimeSpan(int minutes)
+        {
+            return new TimeSpan(0, minutes, 0);
+        }
+
+        public static int GetMax(int first, int second)
+        {
+            return first > second ? first : second;
+        }
     }
 }
