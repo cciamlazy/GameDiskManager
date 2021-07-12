@@ -22,12 +22,12 @@ namespace GDMLib
         private long _size { get
             {
                 return Size;
-            } 
+            }
             set
             {
                 Size = value;
                 EZSize = Utils.BytesToString(value);
-            } 
+            }
         }
         public long Size { get; set; }
         public string EZSize { get; set; }
@@ -45,7 +45,7 @@ namespace GDMLib
         public bool Active { get; set; }
         public List<ConfigFile> ConfigFiles { get; set; }
 
-        public Game (string dir, string name = "")
+        public Game(string dir, string name = "")
         {
             this.Name = name;
             if (name == "")
@@ -54,10 +54,8 @@ namespace GDMLib
             this.Location = dir;
             this.GameID = Data.GameIndex++;
 
-            Drive d = Data.DriveByID(Data.GetDriveIDByName(this.Location));
-            DriveID = d.DriveID;
+            this.DriveID = Data.GetDriveIDByName(this.Location);
             Scan();
-            this.PercentDiskSpace = (double)this.Size / (double)d.TotalSize;
         }
 
         [JsonConstructor]
@@ -80,72 +78,17 @@ namespace GDMLib
         {
             if (Directory.Exists(Location))
             {
-                Folders = DepthSearch.GetDirectories(Location).ToArray();
-                string[] files = Directory.GetFiles(Location, "*.*", SearchOption.AllDirectories);
+                GatherFolders();
 
-                // Get most likely app name
-                IEnumerable<GameFile> appQuery =
-                    from app in files
-                    where new FileInfo(app).Exists
-                    select new GameFile(app);
+                GatherFiles();
 
-                GameFiles = appQuery.ToArray();
+                this.ExecutableLocation = GetLikelyGameExeLocation(this.GameFiles);
 
-                /*foreach (GameFile f in )
-                {
-                    FileInfo info = new FileInfo(f.Location);
+                this._size = CalculateTotalFileSize();
 
-                    Console.WriteLine(info.Extension);
-                    int rank = 0;
-                    if (info.Extension == ".exe") rank += 1;
-                    if (info.Name.Replace(".exe", "").Replace(" ", "").ToLower().Contains(info.Directory.Name)) rank += 2;
-                    if (info.Name.Replace(".exe", "").Replace(" ", "").ToLower().Equals(info.Directory.Name)) rank += 3;
-                    f.exeRank = rank;
-                }*/
+                RemoveFolderFilePath();
 
-                
-
-
-                var gameExe = GameFiles.Where(x => new FileInfo(x.Location).Extension == ".exe")
-                    //.Where(x => new FileInfo(x.Location).Directory.FullName == this.Location)
-                    .Where(x => !new FileInfo(x.Location).Name.Contains("UnityCrashHandler32.exe"))
-                    .MaxBy(x => new FileInfo(x.Location).Length).Take(1);
-
-                if (gameExe != null && gameExe.Count() > 0)
-                    this.ExecutableLocation = gameExe.First().Location;
-
-                //this.Name = gameExe.First<GameFile>().FileInfo.Name.Replace(".exe", "");
-
-                //Get all the sizes
-                long[] sizes = new long[files.Length];
-                for (int i = 0; i < files.Length; i++)
-                {
-                    FileInfo fi = new FileInfo(files[i]);
-                    if (fi.Exists)
-                    {
-                        sizes[i] = fi.Length;
-                    }
-                }
-                _size = sizes.Sum();
-
-
-                for (int i = 0; i < Folders.Length; i++)
-                {
-                    Folders[i] = Folders[i].Replace(this.Location, "");
-                }
-                for (int i = 0; i < GameFiles.Length; i++)
-                {
-                    GameFiles[i].Location = GameFiles[i].Location.Replace(this.Location, "");
-                }
-
-                try
-                {
-                    this.PercentDiskSpace = (double)this.Size / (double)Data.GetDriveByID(this.DriveID).TotalSize;
-                }
-                catch (DirectoryNotFoundException e)
-                {
-                    Console.WriteLine("Drive not found. Can't calculate percent disk space taken");
-                }
+                SetPercentDiskSpace();
 
                 Data.UpdateGame(this);
             }
@@ -153,6 +96,84 @@ namespace GDMLib
             {
                 Console.WriteLine("Directory doesn't exist");
             }
+        }
+
+        private void GatherFolders()
+        {
+            this.Folders = DepthSearch.GetDirectories(Location).ToArray();
+        }
+
+        private string[] GatherFiles()
+        {
+            string[] files = Directory.GetFiles(this.Location, "*.*", SearchOption.AllDirectories);
+
+            IEnumerable<GameFile> appQuery =
+                    from app in files
+                    where new FileInfo(app).Exists
+                    select new GameFile(app);
+
+            GameFiles = appQuery.ToArray();
+
+            return files;
+        }
+
+        private string GetLikelyGameExeLocation(GameFile[] files)
+        {
+            var gameExe = files.Where(x => ConsiderGameExe(new FileInfo(x.Location)))
+                .MaxBy(x => new FileInfo(x.Location).Length).Take(1).First();
+
+            if (gameExe != null)
+                return gameExe.Location;
+
+            return "";
+        }
+
+        string[] InvalidExeNames = { "UnityCrashHandler32.exe" };
+        private bool ConsiderGameExe(FileInfo file)
+        {
+            bool flag = false;
+
+            if (file.Extension == ".exe")
+                flag = true;
+            else
+                return false;
+
+            foreach (string s in InvalidExeNames)
+            {
+                if (file.Name.Contains(s))
+                    return false;
+            }
+
+            return flag;
+        }
+
+        private void SetPercentDiskSpace()
+        {
+            try
+            {
+                this.PercentDiskSpace = (double)this.Size / (double)Data.GetDriveByID(this.DriveID).TotalSize;
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                Console.WriteLine("Drive not found. Can't calculate percent disk space taken");
+            }
+        }
+
+        private void RemoveFolderFilePath()
+        {
+            for (int i = 0; i < Folders.Length; i++)
+            {
+                Folders[i] = Folders[i].Replace(this.Location, "");
+            }
+            for (int i = 0; i < GameFiles.Length; i++)
+            {
+                GameFiles[i].Location = GameFiles[i].Location.Replace(this.Location, "");
+            }
+        }
+
+        private long CalculateTotalFileSize()
+        {
+            return this.GameFiles.Sum(x => x.Size);
         }
 
         public virtual GameMigration GenerateMigration (int toDriveId)

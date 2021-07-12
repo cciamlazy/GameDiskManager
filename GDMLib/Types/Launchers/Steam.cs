@@ -3,6 +3,7 @@ using Gameloop.Vdf.Linq;
 using GDMLib.Games;
 using GDMLib.Serializers.VDF;
 using GDMLib.Transitory;
+using GDMLib.VDF;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,7 +21,7 @@ namespace GDMLib.Launchers
         {
             base.ScanGames(callback);
 
-            GameDirectories = GetSteamDirectories();
+            GatherSteamData();
 
             scanProgress.MaxProgress = CalculateGameCount(); //Duplication of code, refactor this
 
@@ -31,6 +32,53 @@ namespace GDMLib.Launchers
                 ScanSteamGames(s, ref scanProgress);
             }
 
+            CompleteScan();
+        }
+
+        private void GatherSteamData()
+        {
+            GameDirectories = GetSteamDirectories();
+
+            foreach (string s in GameDirectories)
+            {
+                GetSteamApps(s);
+            }
+        }
+
+        private void GetSteamApps(string dir)
+        {
+            IEnumerable<LocalConfig> configs = GetUserLocalConfigs(string.Format("{0}\\userdata\\", dir));
+
+            foreach (LocalConfig c in configs)
+            {
+                foreach (SteamApp app in c.SteamApps)
+                {
+                    SteamApp existing = GetSteamApp(app.AppId);
+
+                    if (Exists(existing))
+                    {
+                        int lastPlayed = Utils.GetMax(existing.LastPlayed, app.LastPlayed);
+                        int playTime = Utils.GetMax(existing.Playtime, app.Playtime);
+                        int playtime2wks = PlayTimeInLastTwoWeeks(lastPlayed, playTime);
+                        steamApps[steamApps.IndexOf(existing)] = new SteamApp
+                        {
+                            AppId = app.AppId,
+                            LastPlayed = lastPlayed,
+                            Playtime = playTime,
+                            Playtime2wks = playtime2wks
+                        };
+                    }
+                    else
+                    {
+                        app.Playtime2wks = PlayTimeInLastTwoWeeks(app.LastPlayed, app.Playtime);
+                        steamApps.Add(app);
+                    }
+                }
+            }
+        }
+
+        private void CompleteScan()
+        {
             scanProgress.CurrentStatus = "Scan Complete";
             scanProgress.Progress = scanProgress.MaxProgress;
             updateProgressDelegate(scanProgress);
@@ -59,51 +107,17 @@ namespace GDMLib.Launchers
             {
                 VProperty libfolders = VdfConvert.Deserialize(File.ReadAllText(Path.Combine(steamapps, "libraryfolders.vdf")));
 
-                int i = 1;
-                bool flag = false;
-                while (!flag)
-                {
-                    string key = i++.ToString();
-                    if (libfolders.Value[key] != null)
-                    {
-                        dirs.Add(libfolders.Value[key].ToString());
-                    }
-                    else
-                        flag = true;
-                }
+                dirs.AddRange(VDFDataDiscovery.NumberKeyIteratory(libfolders));
             }
 
             return dirs.ToArray();
         }
 
+
+
         private void ScanSteamGames(string dir, ref ScanProgress scanProgress)
         {
             string steamapps = dir + "\\steamapps\\";
-
-            IEnumerable<LocalConfig> configs = GetUserLocalConfigs(string.Format("{0}\\userdata\\", dir));
-
-            foreach (LocalConfig c in configs)
-            {
-                foreach (SteamApp app in c.SteamApps)
-                {
-                    if (!steamApps.Exists(x => x.AppId == app.AppId))
-                    {
-                        app.Playtime2wks = PlayTimeInLastTwoWeeks(app.LastPlayed, app.Playtime);
-                        steamApps.Add(app);
-                    }
-                    else
-                    {
-                        SteamApp existing = GetSteamApp(app.AppId);
-                        steamApps[steamApps.IndexOf(existing)] = new SteamApp
-                        {
-                            AppId = app.AppId,
-                            LastPlayed = Utils.GetMax(existing.LastPlayed, app.LastPlayed),
-                            Playtime = Utils.GetMax(existing.Playtime, app.Playtime),
-                            Playtime2wks = PlayTimeInLastTwoWeeks(Utils.GetMax(existing.LastPlayed, app.LastPlayed), Utils.GetMax(existing.Playtime2wks, app.Playtime2wks))
-                        };
-                    }
-                }
-            }
 
             if (Directory.Exists(steamapps))
             {
@@ -151,50 +165,43 @@ namespace GDMLib.Launchers
 
             SteamGame game = Data.GetGameByName(gameManifest.Value["name"].ToString()) as SteamGame;
 
-            if (game == null)
+            if (Exists(game))
             {
-                scanProgress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), scanProgress.Progress);
-                game = new Games.SteamGame(gameDir);
-
-                game.AppID = gameManifest.Value["appid"].ToString();
-                game.Name = gameManifest.Value["name"].ToString();
-                game.Manifest = manifestDir;
-
-                if (game.AppID != null)
-                {
-                    SteamApp app = GetSteamApp(int.Parse(game.AppID));
-
-                    if (app != null)
-                    {
-                        game.LastPlayed = Utils.ConvertEpochToDateTime(app.LastPlayed);
-                        game.PlayTime = app.Playtime;
-                        game.PlayTime2Weeks = app.Playtime2wks;
-                    }
-                }
-
-                scanProgress.UpdateProgress("Added " + game.Name, scanProgress.Progress + 1);
+                scanProgress.UpdateProgress("Alreading tracking " + game.Name + ". Scanning", scanProgress.Progress);
+                game.Scan();
+                scanProgress.UpdateProgress("Scanned " + game.Name, scanProgress.Progress + 1);
             }
             else
             {
-                game.Manifest = manifestDir;
-                game.Scan();
-
-                if (game.AppID != null)
-                {
-                    SteamApp app = GetSteamApp(int.Parse(game.AppID));
-
-                    if (app != null)
-                    {
-                        game.LastPlayed = Utils.ConvertEpochToDateTime(app.LastPlayed);
-                        game.PlayTime = app.Playtime;
-                        game.PlayTime2Weeks = app.Playtime2wks;
-                    }
-                }
-
-            scanProgress.UpdateProgress("Alreading tracking " + game.Name + ". Scanning", scanProgress.Progress + 1);
+                scanProgress.UpdateProgress("Scanning " + gameManifest.Value["name"].ToString(), scanProgress.Progress);
+                game = new Games.SteamGame(gameDir);
+                scanProgress.UpdateProgress("Added " + game.Name, scanProgress.Progress + 1);
             }
 
+            game.AppID = gameManifest.Value["appid"].ToString();
+            game.Name = gameManifest.Value["name"].ToString();
+            game.Manifest = manifestDir;
+
+            if (Exists(game.AppID))
+            {
+                SteamApp app = GetSteamApp(int.Parse(game.AppID));
+
+                if (Exists(app))
+                {
+                    game.LastPlayed = Utils.ConvertEpochToDateTime(app.LastPlayed);
+                    game.PlayTime = app.Playtime;
+                    game.PlayTime2Weeks = app.Playtime2wks;
+                }
+            }
+
+            Data.UpdateGame(game);
+
             updateProgressDelegate(scanProgress);
+        }
+
+        private bool Exists(object obj)
+        {
+            return obj != null;
         }
 
         private SteamApp GetSteamApp(int appid)
