@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -40,6 +41,29 @@ namespace GDMLib
 
             return principal.IsInRole(WindowsBuiltInRole.Administrator);*/
             return false;
+        }
+
+        public static string RunAndOutput(object command)
+        {
+            var procStartInfo =
+                new ProcessStartInfo("cmd", "/c " + command);
+
+            procStartInfo.RedirectStandardOutput = true;
+            procStartInfo.UseShellExecute = false;
+            procStartInfo.CreateNoWindow = true;
+
+            var proc = new Process();
+
+            proc.StartInfo = procStartInfo;
+            proc.Start();
+
+            StreamReader reader = proc.StandardOutput;
+
+            string result = reader.ReadToEnd();
+
+            proc.WaitForExit(); // Wait for everything to finish
+
+            return result;
         }
     }
 }

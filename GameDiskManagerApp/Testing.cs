@@ -2,6 +2,7 @@
 using Gameloop.Vdf.JsonConverter;
 using Gameloop.Vdf.Linq;
 using GDMLib;
+using GDMLib.Serializers.WinSat;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,7 +22,7 @@ namespace GameDiskManagerApp
         {
             InitializeComponent();
 
-            Test();
+            //Test();
         }
 
         private void Test()
@@ -38,6 +39,10 @@ namespace GameDiskManagerApp
             }
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            WinSatHandler.GetReadSpeed('C');
+        }
     }
 
     class LocalConfig
