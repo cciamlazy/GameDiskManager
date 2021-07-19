@@ -42,7 +42,7 @@ namespace GDMLib
         public DateTime LastPlayed { get; set; }
         public int PlayTime { get; set; }
         public int PlayTime2Weeks { get; set; }
-        public bool Active { get; set; }
+        public bool Rankable { get; set; } = true;
         public List<ConfigFile> ConfigFiles { get; set; }
 
         public Game(string dir, string name = "")

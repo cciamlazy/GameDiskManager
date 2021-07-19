@@ -34,7 +34,7 @@ namespace GameDiskManagerApp
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(34, 42);
+            this.button1.Location = new System.Drawing.Point(12, 12);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 0;
@@ -46,7 +46,7 @@ namespace GameDiskManagerApp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(501, 225);
+            this.ClientSize = new System.Drawing.Size(501, 405);
             this.Controls.Add(this.button1);
             this.Name = "Testing";
             this.Text = "Form1";
