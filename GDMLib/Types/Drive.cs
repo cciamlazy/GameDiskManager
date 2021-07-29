@@ -20,6 +20,15 @@ namespace GDMLib
         public bool IsReady { get; set; }
         public bool Active { get; set; }
         public int Priority { get; set; }
+        public long NonMoveableUsedSpace { get; set; }
+        public bool AcceptRankedGames { get; set; }
+
+        public void Scan()
+        {
+            long totalGamesSize = Data.GetGamesByDriveID(this.DriveID).Sum(x => x.Size);
+
+            this.NonMoveableUsedSpace = this.TotalSize - this.AvailableFreeSpace - totalGamesSize;
+        }
 
         /// TODO: Implement winsat information
 

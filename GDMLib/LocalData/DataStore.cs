@@ -10,7 +10,7 @@ using GDMLib.Launchers;
 
 namespace GDMLib
 {
-    public class DataStore
+    class DataStore
     {
         public List<Drive> Drives { get; set; } = new List<Drive>();
         public List<Launcher> Launchers { get; set; } = new List<Launcher>();
@@ -230,6 +230,11 @@ namespace GDMLib
 
         public static int GameCount { get { return Store.Games.Count; } }
         public static List<Game> GameList { get { return Store.Games; } }
+        
+        public static List<Game> GetGamesByDriveID(int driveId)
+        {
+            return Store.Games.Where(x => x.DriveID == driveId).ToList();
+        }
 
         public static Game GetGameByName(string name)
         {
