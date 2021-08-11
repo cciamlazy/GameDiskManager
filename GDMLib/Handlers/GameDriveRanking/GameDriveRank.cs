@@ -33,7 +33,11 @@ namespace GDMLib.Handlers
 
         public void Solve()
         {
-
+            float num = 0f;
+            if (!CheckIfSolutionCanExist())
+            {
+                return;
+            }
         }
 
         private bool CheckIfSolutionCanExist()
