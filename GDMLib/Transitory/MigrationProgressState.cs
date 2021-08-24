@@ -9,6 +9,7 @@ namespace GDMLib.Transitory
     public class MigrationProgressState
     {
         public string State { get; set; }
+        public string Game { get; set; }
         public string Files { get; set; }
         public string FileName { get; set; }
         public Exception Error { get; set; }
